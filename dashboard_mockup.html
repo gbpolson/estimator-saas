@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estimator SaaS — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:       #0f1117;
+    --ink-2:     #3a3f4b;
+    --ink-3:     #7a808f;
+    --border:    #e4e6eb;
+    --surface:   #f7f8fa;
+    --white:     #ffffff;
+    --brand:     #1a56db;
+    --brand-dim: #e8effe;
+    --green:     #0e7a45;
+    --green-dim: #dcf5e8;
+    --amber:     #b45309;
+    --amber-dim: #fef3c7;
+    --red:       #be123c;
+    --red-dim:   #ffe4e6;
+    --purple:    #6d28d9;
+    --purple-dim:#ede9fe;
+    --radius:    10px;
+    --shadow:    0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.04);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,.10);
+    --font:      'DM Sans', sans-serif;
+    --mono:      'DM Mono', monospace;
+    --serif:     'Fraunces', serif;
+    --nav-w:     220px;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--surface);
+    color: var(--ink);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── SIDEBAR ─────────────────────────────────── */
+  .sidebar {
+    width: var(--nav-w);
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    padding: 0 0 16px;
+  }
+
+  .sidebar-logo {
+    padding: 22px 20px 18px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    margin-bottom: 8px;
+  }
+  .sidebar-logo span {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 18px;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+  .sidebar-logo em {
+    font-style: normal;
+    color: #60a5fa;
+  }
+
+  .sidebar-section {
+    padding: 6px 12px 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.28);
+    margin-top: 10px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    margin: 1px 8px;
+    border-radius: 7px;
+    color: rgba(255,255,255,.60);
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: all .15s;
+    user-select: none;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.9); }
+  .nav-item.active { background: rgba(96,165,250,.15); color: #93c5fd; font-weight: 500; }
+  .nav-item .icon { width: 16px; text-align: center; font-size: 15px; opacity: .9; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 99px;
+    font-family: var(--mono);
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 12px 16px 4px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .user-pill:hover { background: rgba(255,255,255,.06); }
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #6d28d9);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: #fff;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; color: rgba(255,255,255,.75); font-weight: 500; }
+  .user-plan { font-size: 11px; color: rgba(255,255,255,.35); }
+
+  /* ── MAIN ─────────────────────────────────────── */
+  .main {
+    margin-left: var(--nav-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ── TOPBAR ───────────────────────────────────── */
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar-title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    letter-spacing: -0.3px;
+  }
+  .topbar-sub {
+    font-size: 13px;
+    color: var(--ink-3);
+    margin-left: 2px;
+  }
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--font);
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: #1447c0; }
+  .btn-ghost { background: transparent; color: var(--ink-2); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { background: var(--red-dim); color: var(--red); }
+  .btn-success { background: var(--green-dim); color: var(--green); }
+
+  /* ── PAGE CONTENT ─────────────────────────────── */
+  .page { padding: 28px; display: none; flex-direction: column; gap: 24px; }
+  .page.active { display: flex; }
+
+  /* ── CARDS ────────────────────────────────────── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .card-header {
+    padding: 18px 22px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .card-body { padding: 18px 22px; }
+
+  /* ── STAT GRID ────────────────────────────────── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .stat-card.blue::before  { background: var(--brand); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.amber::before { background: #f59e0b; }
+  .stat-card.purple::before{ background: var(--purple); }
+
+  .stat-label { font-size: 12px; font-weight: 500; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .stat-value { font-family: var(--serif); font-size: 32px; font-weight: 600; color: var(--ink); letter-spacing: -1px; line-height: 1; }
+  .stat-delta { margin-top: 8px; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+  .delta-up   { color: var(--green); }
+  .delta-down { color: var(--red); }
+
+  /* ── CHART ────────────────────────────────────── */
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 120px;
+    padding: 0 4px;
+  }
+  .bar-group { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .bars { display: flex; align-items: flex-end; gap: 2px; height: 100px; }
+  .bar {
+    border-radius: 3px 3px 0 0;
+    width: 10px;
+    transition: opacity .15s;
+  }
+  .bar:hover { opacity: .75; cursor: pointer; }
+  .bar-label { font-size: 10px; color: var(--ink-3); font-family: var(--mono); }
+
+  /* ── TABLE ────────────────────────────────────── */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--ink-2);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface); }
+
+  /* ── BADGES ───────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--mono);
+  }
+  .badge-green  { background: var(--green-dim);  color: var(--green); }
+  .badge-amber  { background: var(--amber-dim);  color: var(--amber); }
+  .badge-red    { background: var(--red-dim);    color: var(--red); }
+  .badge-brand  { background: var(--brand-dim);  color: var(--brand); }
+  .badge-purple { background: var(--purple-dim); color: var(--purple); }
+  .badge-grey   { background: var(--surface);    color: var(--ink-3); border: 1px solid var(--border); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ── FUNNEL ───────────────────────────────────── */
+  .funnel { display: flex; flex-direction: column; gap: 8px; }
+  .funnel-step { display: flex; align-items: center; gap: 12px; }
+  .funnel-bar-wrap { flex: 1; background: var(--surface); border-radius: 4px; height: 28px; overflow: hidden; position: relative; }
+  .funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+  .funnel-bar span { font-size: 12px; font-weight: 600; color: #fff; font-family: var(--mono); }
+  .funnel-label { font-size: 12px; color: var(--ink-2); width: 100px; text-align: right; font-weight: 500; }
+  .funnel-pct { font-size: 11px; color: var(--ink-3); width: 42px; font-family: var(--mono); }
+
+  /* ── LEADS PAGE ───────────────────────────────── */
+  .filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .filter-chip {
+    padding: 5px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--ink-2);
+    transition: all .15s;
+  }
+  .filter-chip.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .filter-chip:hover:not(.active) { background: var(--surface); }
+
+  .lead-email { font-weight: 500; color: var(--ink); }
+  .lead-value { font-family: var(--mono); font-weight: 600; color: var(--green); }
+
+  /* ── ESTIMATORS PAGE ──────────────────────────── */
+  .estimator-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .estimator-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+  }
+  .estimator-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: #c7d7fd; }
+  .estimator-name { font-weight: 600; font-size: 15px; color: var(--ink); margin-bottom: 4px; }
+  .estimator-slug { font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin-bottom: 14px; }
+  .estimator-stats { display: flex; gap: 16px; }
+  .e-stat-label { font-size: 11px; color: var(--ink-3); margin-bottom: 2px; }
+  .e-stat-val   { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--ink); }
+  .estimator-actions { display: flex; gap: 6px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .version-dot {
+    position: absolute;
+    top: 14px; right: 14px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--ink-3);
+  }
+
+  /* ── EMBED PAGE ───────────────────────────────── */
+  .embed-preview {
+    background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .fake-widget {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    width: 380px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.12);
+  }
+  .widget-step { margin-bottom: 16px; }
+  .widget-q { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 12px; }
+  .widget-options { display: flex; flex-direction: column; gap: 8px; }
+  .widget-opt {
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .widget-opt.selected { border-color: var(--brand); background: var(--brand-dim); color: var(--brand); font-weight: 500; }
+  .widget-opt:hover:not(.selected) { border-color: #93c5fd; background: #f0f7ff; }
+  .widget-progress { height: 4px; background: var(--border); border-radius: 99px; margin-bottom: 20px; overflow: hidden; }
+  .widget-progress-fill { height: 100%; background: var(--brand); border-radius: 99px; width: 33%; }
+
+  .embed-code {
+    background: var(--ink);
+    color: #a5f3fc;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    width: 100%;
+    max-width: 560px;
+  }
+  .embed-code .tag { color: #93c5fd; }
+  .embed-code .attr { color: #fdba74; }
+  .embed-code .val  { color: #86efac; }
+
+  /* ── CRM RETRY ────────────────────────────────── */
+  .retry-timeline { display: flex; flex-direction: column; gap: 0; }
+  .retry-step {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    position: relative;
+  }
+  .retry-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 42px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .retry-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    font-family: var(--mono);
+  }
+  .retry-content { flex: 1; }
+  .retry-title { font-weight: 600; font-size: 13px; color: var(--ink); }
+  .retry-sub   { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+
+  /* ── ANALYTICS PAGE ───────────────────────────── */
+  .analytics-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+  .mini-stat { padding: 14px 18px; background: var(--surface); border-radius: 8px; }
+  .mini-stat-label { font-size: 11px; color: var(--ink-3); margin-bottom: 4px; }
+  .mini-stat-val { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--ink); }
+
+  /* ── MODAL OVERLAY ────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,17,23,.45);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    padding: 28px;
+    width: 480px;
+    max-width: 95vw;
+    animation: slideUp .2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-title { font-family: var(--serif); font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--ink-3); margin-bottom: 22px; }
+  .form-field { margin-bottom: 16px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; display: block; }
+  .form-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: var(--font);
+    color: var(--ink);
+    background: var(--white);
+    outline: none;
+    transition: border .15s;
+  }
+  .form-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-dim); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ── TOAST ────────────────────────────────────── */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    animation: toastIn .25s ease;
+  }
+  .toast.show { display: flex; }
+  @keyframes toastIn { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* ── SEARCH ───────────────────────────────────── */
+  .search-input {
+    padding: 7px 12px 7px 34px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: var(--font);
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a808f' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 11px center;
+    outline: none;
+    width: 220px;
+    transition: border .15s;
+  }
+  .search-input:focus { border-color: var(--brand); background-color: var(--white); }
+
+  /* ── EMPTY STATE ──────────────────────────────── */
+  .empty { text-align: center; padding: 48px 20px; color: var(--ink-3); }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+  .empty h3 { font-size: 15px; font-weight: 600; color: var(--ink-2); margin-bottom: 6px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  /* Tab bar */
+  .tab-bar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 22px; }
+  .tab {
+    padding: 11px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all .15s;
+  }
+  .tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+  .tab:hover:not(.active) { color: var(--ink-2); }
+
+  select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a808f' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span>Estimator<em>SaaS</em></span>
+  </div>
+
+  <div class="sidebar-section">Workspace</div>
+  <div class="nav-item active" onclick="navigate('overview')">
+    <span class="icon">◈</span> Overview
+  </div>
+  <div class="nav-item" onclick="navigate('estimators')">
+    <span class="icon">⊞</span> Estimators
+  </div>
+  <div class="nav-item" onclick="navigate('leads')">
+    <span class="icon">◎</span> Leads
+    <span class="nav-badge">12</span>
+  </div>
+  <div class="nav-item" onclick="navigate('analytics')">
+    <span class="icon">⟁</span> Analytics
+  </div>
+
+  <div class="sidebar-section">Integrations</div>
+  <div class="nav-item" onclick="navigate('embed')">
+    <span class="icon">⊡</span> Embed & Widget
+  </div>
+  <div class="nav-item" onclick="navigate('crm')">
+    <span class="icon">↺</span> CRM / Webhooks
+  </div>
+
+  <div class="sidebar-section">Account</div>
+  <div class="nav-item" onclick="navigate('settings')">
+    <span class="icon">⊙</span> Settings
+  </div>
+  <div class="nav-item" onclick="navigate('billing')">
+    <span class="icon">◇</span> Billing
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar">JD</div>
+      <div>
+        <div class="user-name">Jordan Davis</div>
+        <div class="user-plan">Pro Plan</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ── PAGE: OVERVIEW ─────────────────────────── -->
+  <div id="page-overview" class="page active">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Overview</div>
+      </div>
+      <div class="topbar-actions">
+        <select class="form-input btn-sm" style="width:140px;font-size:12px">
+          <option>Last 30 days</option>
+          <option>Last 7 days</option>
+          <option>This month</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="openModal('new-estimator')">+ New Estimator</button>
+      </div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:24px">
+      <!-- Stats -->
+      <div class="stat-grid">
+        <div class="stat-card blue">
+          <div class="stat-label">Total Views</div>
+          <div class="stat-value">4,821</div>
+          <div class="stat-delta delta-up">↑ 18% vs prior period</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Leads Captured</div>
+          <div class="stat-value">312</div>
+          <div class="stat-delta delta-up">↑ 24% vs prior period</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Conversion Rate</div>
+          <div class="stat-value">6.5%</div>
+          <div class="stat-delta delta-down">↓ 0.4% vs prior period</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">CRM Synced</div>
+          <div class="stat-value">287</div>
+          <div class="stat-delta delta-up">↑ 92% sync rate</div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Views & Leads — Daily</div>
+            <div style="display:flex;gap:12px;font-size:11px;color:var(--ink-3)">
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:var(--brand);display:inline-block"></span>Views</span>
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:var(--green);display:inline-block"></span>Leads</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-bars">
+              <!-- 14 day bars -->
+              <script>
+                const days = ['M','T','W','T','F','S','S','M','T','W','T','F','S','S'];
+                const views = [120,145,98,160,185,210,80,130,155,170,195,220,90,148];
+                const leads = [8,11,6,13,15,18,5,9,12,14,16,19,6,11];
+              </script>
+              <!-- rendered below via JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Funnel Breakdown</div></div>
+          <div class="card-body">
+            <div class="funnel">
+              <div class="funnel-step">
+                <div class="funnel-label">Widget Views</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:100%;background:var(--brand)"><span>4,821</span></div>
+                </div>
+                <div class="funnel-pct">100%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label">Step 1</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:74%;background:#3b82f6"><span>3,568</span></div>
+                </div>
+                <div class="funnel-pct">74%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label">Step 2</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:48%;background:#60a5fa"><span>2,314</span></div>
+                </div>
+                <div class="funnel-pct">48%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label">Result View</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:28%;background:#93c5fd"><span>1,350</span></div>
+                </div>
+                <div class="funnel-pct">28%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label">Lead Submit</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:6.5%;background:var(--green)"><span>312</span></div>
+                </div>
+                <div class="funnel-pct">6.5%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent leads -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Leads</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('leads')">View all →</button>
+        </div>
+        <div class="card-body" style="padding-top:12px">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name / Email</th>
+                <th>Estimator</th>
+                <th>Estimate Value</th>
+                <th>CRM</th>
+                <th>Submitted</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="lead-email">Sarah Chen</div><div style="font-size:11px;color:var(--ink-3)">s.chen@techco.io</div></td>
+                <td>Roof Repair Cost</td>
+                <td class="lead-value">$4,200</td>
+                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
+                <td style="color:var(--ink-3);font-size:12px">2 min ago</td>
+              </tr>
+              <tr>
+                <td><div class="lead-email">Marcus Webb</div><div style="font-size:11px;color:var(--ink-3)">m.webb@gmail.com</div></td>
+                <td>Kitchen Remodel</td>
+                <td class="lead-value">$18,500</td>
+                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
+                <td style="color:var(--ink-3);font-size:12px">14 min ago</td>
+              </tr>
+              <tr>
+                <td><div class="lead-email">Priya Nair</div><div style="font-size:11px;color:var(--ink-3)">priya@nairhomes.com</div></td>
+                <td>Solar Panel Install</td>
+                <td class="lead-value">$9,800</td>
+                <td><span class="badge badge-amber"><span class="dot"></span>Pending</span></td>
+                <td style="color:var(--ink-3);font-size:12px">1 hr ago</td>
+              </tr>
+              <tr>
+                <td><div class="lead-email">Tom Ruiz</div><div style="font-size:11px;color:var(--ink-3)">truiz@buildco.net</div></td>
+                <td>Roof Repair Cost</td>
+                <td class="lead-value">$2,100</td>
+                <td><span class="badge badge-red"><span class="dot"></span>Failed</span></td>
+                <td style="color:var(--ink-3);font-size:12px">3 hr ago</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: ESTIMATORS ───────────────────────── -->
+  <div id="page-estimators" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Estimators</div>
+      <div class="topbar-actions">
+        <input class="search-input" placeholder="Search estimators…">
+        <button class="btn btn-primary btn-sm" onclick="openModal('new-estimator')">+ New Estimator</button>
+      </div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="estimator-grid">
+
+        <div class="estimator-card" onclick="navigate('analytics')">
+          <div class="version-dot">v3</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="badge badge-green">Published</span>
+          </div>
+          <div class="estimator-name">Roof Repair Cost</div>
+          <div class="estimator-slug">/embed/roof-repair-cost</div>
+          <div class="estimator-stats">
+            <div><div class="e-stat-label">Views</div><div class="e-stat-val">2,140</div></div>
+            <div><div class="e-stat-label">Leads</div><div class="e-stat-val">148</div></div>
+            <div><div class="e-stat-label">CVR</div><div class="e-stat-val">6.9%</div></div>
+          </div>
+          <div class="estimator-actions">
+            <button class="btn btn-ghost btn-sm">Edit Draft</button>
+            <button class="btn btn-ghost btn-sm">Analytics</button>
+            <button class="btn btn-success btn-sm">Published</button>
+          </div>
+        </div>
+
+        <div class="estimator-card">
+          <div class="version-dot">v1</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="badge badge-green">Published</span>
+          </div>
+          <div class="estimator-name">Kitchen Remodel</div>
+          <div class="estimator-slug">/embed/kitchen-remodel</div>
+          <div class="estimator-stats">
+            <div><div class="e-stat-label">Views</div><div class="e-stat-val">1,390</div></div>
+            <div><div class="e-stat-label">Leads</div><div class="e-stat-val">97</div></div>
+            <div><div class="e-stat-label">CVR</div><div class="e-stat-val">7.0%</div></div>
+          </div>
+          <div class="estimator-actions">
+            <button class="btn btn-ghost btn-sm">Edit Draft</button>
+            <button class="btn btn-ghost btn-sm">Analytics</button>
+            <button class="btn btn-success btn-sm">Published</button>
+          </div>
+        </div>
+
+        <div class="estimator-card">
+          <div class="version-dot">v2</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="badge badge-amber">Draft</span>
+          </div>
+          <div class="estimator-name">Solar Panel Install</div>
+          <div class="estimator-slug">/embed/solar-panel-install</div>
+          <div class="estimator-stats">
+            <div><div class="e-stat-label">Views</div><div class="e-stat-val">491</div></div>
+            <div><div class="e-stat-label">Leads</div><div class="e-stat-val">31</div></div>
+            <div><div class="e-stat-label">CVR</div><div class="e-stat-val">6.3%</div></div>
+          </div>
+          <div class="estimator-actions">
+            <button class="btn btn-ghost btn-sm">Edit Draft</button>
+            <button class="btn btn-ghost btn-sm">Analytics</button>
+            <button class="btn btn-primary btn-sm" onclick="showToast('✓ Published successfully')">Publish</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Version history panel -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Version History — Roof Repair Cost</div></div>
+        <div class="card-body" style="padding-top:12px">
+          <table class="data-table">
+            <thead>
+              <tr><th>Version</th><th>Published By</th><th>Change Summary</th><th>Published</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span style="font-family:var(--mono);font-weight:600">v3</span></td>
+                <td>Jordan Davis</td>
+                <td>Added budget qualifier step, updated result copy</td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 8, 2026</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td><span style="font-family:var(--mono);font-weight:600">v2</span></td>
+                <td>Jordan Davis</td>
+                <td>Reordered questions, new lead form layout</td>
+                <td style="font-size:12px;color:var(--ink-3)">Feb 22, 2026</td>
+                <td><span class="badge badge-grey">Inactive</span></td>
+                <td><button class="btn btn-ghost btn-sm" onclick="showToast('↺ Rolled back to v2')">Rollback</button></td>
+              </tr>
+              <tr>
+                <td><span style="font-family:var(--mono);font-weight:600">v1</span></td>
+                <td>Jordan Davis</td>
+                <td>Initial publish</td>
+                <td style="font-size:12px;color:var(--ink-3)">Feb 10, 2026</td>
+                <td><span class="badge badge-grey">Inactive</span></td>
+                <td><button class="btn btn-ghost btn-sm" onclick="showToast('↺ Rolled back to v1')">Rollback</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: LEADS ────────────────────────────── -->
+  <div id="page-leads" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Leads</div>
+      <div class="topbar-actions">
+        <input class="search-input" placeholder="Search leads…">
+        <button class="btn btn-ghost btn-sm">⬇ Export CSV</button>
+      </div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="filter-row">
+        <span style="font-size:12px;font-weight:600;color:var(--ink-3)">Status:</span>
+        <div class="filter-chip active" onclick="filterChip(this)">All</div>
+        <div class="filter-chip" onclick="filterChip(this)">New</div>
+        <div class="filter-chip" onclick="filterChip(this)">Contacted</div>
+        <div class="filter-chip" onclick="filterChip(this)">Qualified</div>
+        <div class="filter-chip" onclick="filterChip(this)">Converted</div>
+        <span style="font-size:12px;font-weight:600;color:var(--ink-3);margin-left:12px">CRM:</span>
+        <div class="filter-chip" onclick="filterChip(this)">Pending</div>
+        <div class="filter-chip" onclick="filterChip(this)">Failed</div>
+        <div style="margin-left:auto;font-size:12px;color:var(--ink-3)">312 total results</div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left:20px">Lead</th>
+                <th>Estimator</th>
+                <th>Estimate</th>
+                <th>Status</th>
+                <th>CRM Sync</th>
+                <th>Submitted</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding-left:20px">
+                  <div class="lead-email">Sarah Chen</div>
+                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_7a2b9c</div>
+                </td>
+                <td>Roof Repair Cost</td>
+                <td class="lead-value">$4,200</td>
+                <td><span class="badge badge-brand">New</span></td>
+                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 14:22</td>
+                <td><button class="btn btn-ghost btn-sm">View</button></td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px">
+                  <div class="lead-email">Marcus Webb</div>
+                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_4f8e1d</div>
+                </td>
+                <td>Kitchen Remodel</td>
+                <td class="lead-value">$18,500</td>
+                <td><span class="badge badge-green">Qualified</span></td>
+                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 13:48</td>
+                <td><button class="btn btn-ghost btn-sm">View</button></td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px">
+                  <div class="lead-email">Priya Nair</div>
+                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_9c3a7f</div>
+                </td>
+                <td>Solar Panel Install</td>
+                <td class="lead-value">$9,800</td>
+                <td><span class="badge badge-brand">New</span></td>
+                <td><span class="badge badge-amber"><span class="dot"></span>Pending</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 13:05</td>
+                <td><button class="btn btn-ghost btn-sm">View</button></td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px">
+                  <div class="lead-email">Tom Ruiz</div>
+                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_2b5d8e</div>
+                </td>
+                <td>Roof Repair Cost</td>
+                <td class="lead-value">$2,100</td>
+                <td><span class="badge badge-brand">New</span></td>
+                <td><span class="badge badge-red"><span class="dot"></span>Failed · retry 2/5</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 11:30</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="showToast('↺ Manual sync triggered')">Sync Now</button></td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px">
+                  <div class="lead-email">Aisha Okonkwo</div>
+                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_6e1f4a</div>
+                </td>
+                <td>Kitchen Remodel</td>
+                <td class="lead-value">$24,000</td>
+                <td><span class="badge badge-purple">Converted</span></td>
+                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 8, 16:14</td>
+                <td><button class="btn btn-ghost btn-sm">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: ANALYTICS ───────────────────────── -->
+  <div id="page-analytics" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Analytics</div>
+      <div class="topbar-actions">
+        <select class="form-input btn-sm" style="width:160px;font-size:12px">
+          <option>Roof Repair Cost</option>
+          <option>Kitchen Remodel</option>
+          <option>Solar Panel Install</option>
+        </select>
+        <select class="form-input btn-sm" style="width:130px;font-size:12px">
+          <option>Last 30 days</option>
+          <option>Last 7 days</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="stat-grid">
+        <div class="stat-card blue"><div class="stat-label">Views</div><div class="stat-value">2,140</div><div class="stat-delta delta-up">↑ 22%</div></div>
+        <div class="stat-card green"><div class="stat-label">Completions</div><div class="stat-value">893</div><div class="stat-delta delta-up">↑ 15%</div></div>
+        <div class="stat-card amber"><div class="stat-label">Leads</div><div class="stat-value">148</div><div class="stat-delta delta-up">↑ 31%</div></div>
+        <div class="stat-card purple"><div class="stat-label">Avg. Estimate</div><div class="stat-value">$3,840</div><div class="stat-delta delta-up">↑ 8%</div></div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Step Drop-off</div></div>
+          <div class="card-body">
+            <div class="funnel">
+              <div class="funnel-step">
+                <div class="funnel-label" style="font-size:11px">Widget Load</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:100%;background:var(--brand)"><span>2,140</span></div>
+                </div><div class="funnel-pct">100%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label" style="font-size:11px">Roof Type</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:80%;background:#3b82f6"><span>1,712</span></div>
+                </div><div class="funnel-pct">80%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label" style="font-size:11px">Sq. Footage</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:58%;background:#60a5fa"><span>1,241</span></div>
+                </div><div class="funnel-pct">58%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label" style="font-size:11px">Material</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:42%;background:#93c5fd"><span>899</span></div>
+                </div><div class="funnel-pct">42%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label" style="font-size:11px">Lead Submit</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:6.9%;background:var(--green)"><span>148</span></div>
+                </div><div class="funnel-pct">6.9%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Top Exit Points</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span>Result view → no submit</span><span style="font-family:var(--mono);font-weight:600;color:var(--amber)">751</span>
+              </div>
+              <div style="background:var(--surface);border-radius:3px;height:6px"><div style="width:85%;height:6px;border-radius:3px;background:#f59e0b"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span>Material step</span><span style="font-family:var(--mono);font-weight:600;color:var(--red)">342</span>
+              </div>
+              <div style="background:var(--surface);border-radius:3px;height:6px"><div style="width:39%;height:6px;border-radius:3px;background:var(--red)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span>Sq. footage step</span><span style="font-family:var(--mono);font-weight:600;color:var(--ink-3)">471</span>
+              </div>
+              <div style="background:var(--surface);border-radius:3px;height:6px"><div style="width:53%;height:6px;border-radius:3px;background:var(--ink-3)"></div></div>
+            </div>
+
+            <div style="margin-top:8px;padding-top:14px;border-top:1px solid var(--border)">
+              <div class="card-title" style="margin-bottom:12px;font-size:13px">UID Breakdown</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <div class="mini-stat"><div class="mini-stat-label">estimator_uid</div><div class="mini-stat-val" style="font-size:14px;color:var(--brand)">roof-repair-cost</div></div>
+                <div class="mini-stat"><div class="mini-stat-label">visitor_uids</div><div class="mini-stat-val">2,140</div></div>
+                <div class="mini-stat"><div class="mini-stat-label">lead_uids</div><div class="mini-stat-val">148</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: EMBED ────────────────────────────── -->
+  <div id="page-embed" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Embed & Widget</div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Embed Code</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="form-field">
+              <label class="form-label">Select Estimator</label>
+              <select class="form-input">
+                <option>Roof Repair Cost</option>
+                <option>Kitchen Remodel</option>
+              </select>
+            </div>
+            <div class="embed-code">
+              <span class="tag">&lt;iframe</span><br>
+              &nbsp;&nbsp;<span class="attr">src</span>=<span class="val">"https://yourapp.com/embed/roof-repair-cost"</span><br>
+              &nbsp;&nbsp;<span class="attr">width</span>=<span class="val">"100%"</span><br>
+              &nbsp;&nbsp;<span class="attr">height</span>=<span class="val">"520"</span><br>
+              &nbsp;&nbsp;<span class="attr">frameborder</span>=<span class="val">"0"</span><br>
+              <span class="tag">&gt;&lt;/iframe&gt;</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('📋 Copied to clipboard')">Copy Embed Code</button>
+
+            <div style="padding-top:14px;border-top:1px solid var(--border)">
+              <div class="form-label" style="margin-bottom:8px">Domain Allowlist</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+                <span style="background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:5px;font-size:12px;font-family:var(--mono)">yoursite.com <span style="cursor:pointer;color:var(--ink-3)" onclick="showToast('Domain removed')">×</span></span>
+                <span style="background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:5px;font-size:12px;font-family:var(--mono)">staging.yoursite.com <span style="cursor:pointer;color:var(--ink-3)">×</span></span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <input class="form-input" placeholder="add-domain.com" style="flex:1">
+                <button class="btn btn-ghost btn-sm" onclick="showToast('✓ Domain added')">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Live Preview</div></div>
+          <div class="card-body">
+            <div class="embed-preview">
+              <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">iframe src="/embed/roof-repair-cost"</div>
+              <div class="fake-widget">
+                <div style="font-size:12px;font-weight:600;color:var(--brand);margin-bottom:12px">Roof Repair Cost Estimator</div>
+                <div class="widget-progress"><div class="widget-progress-fill"></div></div>
+                <div class="widget-step">
+                  <div class="widget-q">What type of roof do you have?</div>
+                  <div class="widget-options">
+                    <div class="widget-opt selected">Asphalt Shingles</div>
+                    <div class="widget-opt">Metal Roofing</div>
+                    <div class="widget-opt">Tile / Slate</div>
+                    <div class="widget-opt">Flat / TPO</div>
+                  </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px" onclick="showToast('→ Step 2 of 3')">Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: CRM ──────────────────────────────── -->
+  <div id="page-crm" class="page">
+    <div class="topbar">
+      <div class="topbar-title">CRM & Webhooks</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openModal('add-crm')">+ Add Integration</button>
+      </div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+
+      <!-- Active integrations -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Active Integrations</div></div>
+        <div class="card-body" style="padding-top:12px">
+          <table class="data-table">
+            <thead><tr><th>Integration</th><th>Type</th><th>Status</th><th>Last Sync</th><th>Errors</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>HubSpot CRM</strong></td>
+                <td><span class="badge badge-purple">hubspot</span></td>
+                <td><span class="badge badge-green"><span class="dot"></span>Connected</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">2 min ago</td>
+                <td><span style="font-family:var(--mono);color:var(--ink-3)">0</span></td>
+                <td><button class="btn btn-ghost btn-sm">Configure</button></td>
+              </tr>
+              <tr>
+                <td><strong>Zapier Webhook</strong></td>
+                <td><span class="badge badge-brand">webhook</span></td>
+                <td><span class="badge badge-amber"><span class="dot"></span>Degraded</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">14 min ago</td>
+                <td><span style="font-family:var(--mono);color:var(--red);font-weight:600">3</span></td>
+                <td><button class="btn btn-ghost btn-sm">Configure</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Retry flow -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">CRM Retry Flow</div></div>
+          <div class="card-body">
+            <div class="retry-timeline">
+              <div class="retry-step">
+                <div class="retry-dot" style="background:var(--green-dim);color:var(--green)">1</div>
+                <div class="retry-content">
+                  <div class="retry-title">Immediate → 5 min retry</div>
+                  <div class="retry-sub">Transient network errors, timeouts</div>
+                </div>
+              </div>
+              <div class="retry-step">
+                <div class="retry-dot" style="background:var(--brand-dim);color:var(--brand)">2</div>
+                <div class="retry-content">
+                  <div class="retry-title">30 minute retry</div>
+                  <div class="retry-sub">Rate limits, temporary 429/503</div>
+                </div>
+              </div>
+              <div class="retry-step">
+                <div class="retry-dot" style="background:var(--amber-dim);color:var(--amber)">3</div>
+                <div class="retry-content">
+                  <div class="retry-title">2 hour retry</div>
+                  <div class="retry-sub">Extended outage window</div>
+                </div>
+              </div>
+              <div class="retry-step">
+                <div class="retry-dot" style="background:var(--amber-dim);color:var(--amber)">4</div>
+                <div class="retry-content">
+                  <div class="retry-title">12 hour retry</div>
+                  <div class="retry-sub">Overnight backoff</div>
+                </div>
+              </div>
+              <div class="retry-step">
+                <div class="retry-dot" style="background:var(--red-dim);color:var(--red)">5+</div>
+                <div class="retry-content">
+                  <div class="retry-title">24 hr · Owner alert sent</div>
+                  <div class="retry-sub">Marked failed_permanent after 7 days</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Retry Queue</div>
+            <span class="badge badge-red">3 failed</span>
+          </div>
+          <div class="card-body" style="padding-top:12px;display:flex;flex-direction:column;gap:10px">
+            <div style="padding:12px;background:var(--red-dim);border-radius:8px;border:1px solid #fecaca">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink)">lead_2b5d8e</span>
+                <span class="badge badge-red">retry 2/5</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-3)">Tom Ruiz · Roof Repair Cost</div>
+              <div style="font-size:11px;color:var(--red);margin-top:4px">Error: 503 Service Unavailable</div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:2px">Next retry: 45 min</div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="showToast('↺ Manual sync triggered')">Sync Now</button>
+            </div>
+            <div style="padding:12px;background:var(--amber-dim);border-radius:8px;border:1px solid #fcd34d">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink)">lead_8a1c3f</span>
+                <span class="badge badge-amber">retry 1/5</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-3)">Jane Park · Kitchen Remodel</div>
+              <div style="font-size:11px;color:var(--amber);margin-top:4px">Error: Rate limit exceeded</div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:2px">Next retry: 18 min</div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="showToast('↺ Manual sync triggered')">Sync Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: SETTINGS ────────────────────────── -->
+  <div id="page-settings" class="page">
+    <div class="topbar"><div class="topbar-title">Settings</div></div>
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Business Profile</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="form-field"><label class="form-label">Business Name</label><input class="form-input" value="Davis Roofing Co."></div>
+            <div class="form-field"><label class="form-label">Slug</label><input class="form-input" value="davis-roofing" style="font-family:var(--mono)"></div>
+            <div class="form-field"><label class="form-label">Plan</label><input class="form-input" value="Pro" disabled style="color:var(--ink-3)"></div>
+            <button class="btn btn-primary btn-sm" style="align-self:flex-start" onclick="showToast('✓ Settings saved')">Save Changes</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Team Members</div></div>
+          <div class="card-body" style="padding-top:12px">
+            <table class="data-table">
+              <thead><tr><th>Member</th><th>Role</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div style="font-weight:500">Jordan Davis</div><div style="font-size:11px;color:var(--ink-3)">j.davis@davisroofing.com</div></td>
+                  <td><span class="badge badge-purple">Owner</span></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:500">Alex Kim</div><div style="font-size:11px;color:var(--ink-3)">a.kim@davisroofing.com</div></td>
+                  <td><span class="badge badge-brand">Admin</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+                </tr>
+              </tbody>
+            </table>
+            <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showToast('📧 Invite email sent')">+ Invite Member</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: BILLING ─────────────────────────── -->
+  <div id="page-billing" class="page">
+    <div class="topbar"><div class="topbar-title">Billing</div></div>
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="two-col">
+        <div class="card" style="border-color:#c7d7fd">
+          <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:12px;font-weight:600;color:var(--brand);text-transform:uppercase;letter-spacing:.05em">Current Plan</div><div style="font-family:var(--serif);font-size:28px;font-weight:600;color:var(--ink);letter-spacing:-0.5px">Pro</div></div>
+              <span class="badge badge-green">Active</span>
+            </div>
+            <div style="font-size:13px;color:var(--ink-2)">$79 / month · renews Apr 9, 2026</div>
+            <div style="padding-top:12px;border-top:1px solid var(--border)">
+              <div style="font-size:12px;font-weight:600;color:var(--ink-3);margin-bottom:10px">Usage this period</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;justify-content:space-between;font-size:13px"><span>Leads captured</span><span style="font-family:var(--mono);font-weight:600">312 / 1,000</span></div>
+                <div style="background:var(--surface);border-radius:3px;height:5px"><div style="width:31%;height:5px;border-radius:3px;background:var(--brand)"></div></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px"><span>Team members</span><span style="font-family:var(--mono);font-weight:600">2 / 5</span></div>
+                <div style="background:var(--surface);border-radius:3px;height:5px"><div style="width:40%;height:5px;border-radius:3px;background:var(--brand)"></div></div>
+              </div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="showToast('Opening Stripe portal…')">Manage Billing →</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Plan Comparison</div></div>
+          <div class="card-body" style="padding-top:12px">
+            <table class="data-table">
+              <thead><tr><th>Feature</th><th>Starter</th><th>Pro</th><th>Enterprise</th></tr></thead>
+              <tbody>
+                <tr><td>Estimators</td><td>3</td><td>Unlimited</td><td>Unlimited</td></tr>
+                <tr><td>Leads / mo</td><td>100</td><td>1,000</td><td>Unlimited</td></tr>
+                <tr><td>Team seats</td><td>1</td><td>5</td><td>Unlimited</td></tr>
+                <tr><td>CRM integrations</td><td>1</td><td>3</td><td>Unlimited</td></tr>
+                <tr><td>Analytics</td><td>Basic</td><td>Full</td><td>Full + API</td></tr>
+                <tr><td>Price / mo</td><td style="font-family:var(--mono);font-weight:600">$29</td><td style="font-family:var(--mono);font-weight:600;color:var(--brand)">$79 ✓</td><td style="font-family:var(--mono);font-weight:600">Custom</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ── MODALS ─────────────────────────────────── -->
+<div class="modal-overlay" id="modal-new-estimator" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">New Estimator</div>
+    <div class="modal-sub">Create a new embeddable cost estimator widget</div>
+    <div class="form-field"><label class="form-label">Estimator Name</label><input class="form-input" placeholder="e.g. HVAC Install Cost"></div>
+    <div class="form-field"><label class="form-label">URL Slug</label><input class="form-input" placeholder="hvac-install-cost" style="font-family:var(--mono)"></div>
+    <div class="form-field"><label class="form-label">Description (optional)</label><input class="form-input" placeholder="Internal notes about this estimator"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-new-estimator').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="document.getElementById('modal-new-estimator').classList.remove('open');showToast('✓ Estimator created')">Create Estimator</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-crm" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">Add CRM Integration</div>
+    <div class="modal-sub">Connect your leads to an external CRM or webhook endpoint</div>
+    <div class="form-field"><label class="form-label">Integration Type</label>
+      <select class="form-input"><option>HubSpot</option><option>Salesforce</option><option>Pipedrive</option><option>Webhook (Custom)</option><option>Zapier</option></select>
+    </div>
+    <div class="form-field"><label class="form-label">API Key / Webhook URL</label><input class="form-input" placeholder="https://hooks.zapier.com/hooks/catch/…" style="font-family:var(--mono)"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-add-crm').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="document.getElementById('modal-add-crm').classList.remove('open');showToast('✓ Integration connected')">Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Chart render ──────────────────────────────
+  const days = ['M','T','W','T','F','S','S','M','T','W','T','F','S','S'];
+  const views = [120,145,98,160,185,210,80,130,155,170,195,220,90,148];
+  const leads = [8,11,6,13,15,18,5,9,12,14,16,19,6,11];
+  const maxV = Math.max(...views);
+
+  const chartEl = document.querySelector('.chart-bars');
+  if (chartEl) {
+    chartEl.innerHTML = days.map((d,i) => `
+      <div class="bar-group">
+        <div class="bars">
+          <div class="bar" style="height:${Math.round(views[i]/maxV*90)}px;background:var(--brand);opacity:.85" title="${views[i]} views"></div>
+          <div class="bar" style="height:${Math.round(leads[i]/maxV*90)}px;background:var(--green)" title="${leads[i]} leads"></div>
+        </div>
+        <div class="bar-label">${d}</div>
+      </div>
+    `).join('');
+  }
+
+  // ── Navigation ────────────────────────────────
+  function navigate(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const page = document.getElementById('page-' + id);
+    if (page) page.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'"))
+        n.classList.add('active');
+    });
+  }
+
+  // ── Filter chips ──────────────────────────────
+  function filterChip(el) {
+    el.closest('.filter-row').querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── Modals ────────────────────────────────────
+  function openModal(id) {
+    document.getElementById('modal-' + id).classList.add('open');
+  }
+  function closeModal(e) {
+    if (e.target.classList.contains('modal-overlay'))
+      e.target.classList.remove('open');
+  }
+
+  // ── Toast ─────────────────────────────────────
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>
