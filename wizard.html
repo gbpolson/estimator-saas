@@ -283,6 +283,19 @@ textarea.wiz-input{min-height:100px;line-height:1.6;}
   </div>
 </div>
 
+
+<!-- API KEY PROMPT -->
+<div id="key-gate" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;font-family:'DM Sans',sans-serif;">
+    <div style="font-size:13px;font-weight:600;color:#2d6a4f;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">One-time setup</div>
+    <div style="font-size:22px;font-weight:600;color:#1a1814;margin-bottom:8px">Enter your Anthropic API Key</div>
+    <div style="font-size:14px;color:#6b6560;margin-bottom:20px;line-height:1.5">Your key is stored only in your browser and never sent to any server except Anthropic's API directly.</div>
+    <input id="key-input" type="password" placeholder="sk-ant-api03-..." 
+      style="width:100%;padding:12px 14px;border:1.5px solid #d8d2c7;border-radius:10px;font-size:14px;font-family:'DM Mono',monospace;outline:none;margin-bottom:12px;color:#1a1814;">
+    <div style="font-size:12px;color:#9e9689;margin-bottom:16px">Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:#2d6a4f">console.anthropic.com → API Keys</a></div>
+    <button onclick="saveKey()" style="width:100%;padding:12px;background:#2d6a4f;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Save & Continue →</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -292,7 +305,7 @@ textarea.wiz-input{min-height:100px;line-height:1.6;}
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const SUPABASE_URL  = 'https://shjyorirrhdqwjfxrdsa.supabase.co'
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoanlvcmlycmhkcXdqZnhyZHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwOTE2MDcsImV4cCI6MjA4ODY2NzYwN30.okhlyiDDFCUd36Gl9ZQ2NgMPl_MA4rlMYXcDyNyjjwQ'
-const ANTHROPIC_KEY = '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'
+// API calls go through /api/claude proxy
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
 // ── State ──────────────────────────────────────
@@ -720,14 +733,9 @@ function startBlank() {
 //  CLAUDE API
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function callClaude({ system, messages }) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('/api/claude', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-      'x-api-key': ANTHROPIC_KEY
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1000,
@@ -743,12 +751,28 @@ async function callClaude({ system, messages }) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  UTILS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+function saveKey() {
+  const val = document.getElementById('key-input').value.trim()
+  if (!val.startsWith('sk-ant-')) { alert('Please enter a valid Anthropic API key starting with sk-ant-'); return }
+  ANTHROPIC_KEY = val
+  sessionStorage.setItem('anthropic_key', val)
+  document.getElementById('key-gate').style.display = 'none'
+}
+
+function checkKey() {
+  if (!ANTHROPIC_KEY) {
+    document.getElementById('key-gate').style.display = 'flex'
+  }
+}
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
   document.getElementById('screen-' + id).classList.add('active')
 }
 
 function goHome() { window.location.href = '/' }
+
+window.addEventListener('DOMContentLoaded', checkKey)
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 function uid() { return Math.random().toString(36).slice(2,10) }
