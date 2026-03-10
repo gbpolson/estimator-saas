@@ -456,6 +456,47 @@
   .mini-stat-label { font-size: 11px; color: var(--ink-3); margin-bottom: 4px; }
   .mini-stat-val { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--ink); }
 
+
+  /* ── LEAD DETAIL SLIDE-OVER ── */
+  .slideover-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200; display: none; justify-content: flex-end; }
+  .slideover-overlay.open { display: flex; }
+  .slideover { width: 560px; max-width: 96vw; background: var(--white); height: 100%; overflow-y: auto; display: flex; flex-direction: column; box-shadow: -8px 0 40px rgba(0,0,0,.15); animation: slideIn .25s cubic-bezier(.4,0,.2,1); }
+  @keyframes slideIn { from { transform: translateX(100%); } to { transform: none; } }
+  .so-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 12px; position: sticky; top: 0; background: var(--white); z-index: 1; }
+  .so-header-info { flex: 1; }
+  .so-name  { font-size: 18px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .so-email { font-size: 13px; color: var(--ink-3); }
+  .so-close { background: none; border: 1px solid var(--border); border-radius: 7px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: var(--ink-3); display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; }
+  .so-close:hover { background: var(--surface); color: var(--ink); }
+  .so-body  { padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; flex: 1; }
+  .so-section { display: flex; flex-direction: column; gap: 10px; }
+  .so-section-title { font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+  .so-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .so-field { background: var(--surface); border-radius: 8px; padding: 10px 12px; }
+  .so-field-label { font-size: 10px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+  .so-field-value { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .so-field-value.mono { font-family: var(--mono); font-size: 12px; }
+  .so-field-value.big  { font-size: 22px; font-weight: 700; color: var(--green); font-family: var(--mono); }
+  .so-answers { display: flex; flex-direction: column; gap: 6px; }
+  .so-answer-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--surface); border-radius: 7px; font-size: 13px; }
+  .so-answer-key { color: var(--ink-3); max-width: 50%; }
+  .so-answer-val { font-weight: 500; color: var(--ink); text-align: right; max-width: 50%; }
+  .so-timeline { display: flex; flex-direction: column; }
+  .so-event { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .so-event:last-child { border-bottom: none; }
+  .so-event-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); margin-top: 5px; flex-shrink: 0; }
+  .so-event-type { font-size: 12px; font-weight: 600; color: var(--ink); font-family: var(--mono); }
+  .so-event-time { font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+  .so-select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; font-family: var(--font); color: var(--ink); background: var(--white); outline: none; cursor: pointer; }
+  .so-select:focus { border-color: var(--brand); }
+  .so-textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; font-family: var(--font); color: var(--ink); background: var(--white); outline: none; resize: vertical; min-height: 80px; transition: border .15s; }
+  .so-textarea:focus { border-color: var(--brand); }
+  .so-notes-history { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .so-note { background: var(--surface); border-radius: 8px; padding: 10px 12px; }
+  .so-note-meta { font-size: 11px; color: var(--ink-3); margin-bottom: 4px; }
+  .so-note-text { font-size: 13px; color: var(--ink); line-height: 1.5; }
+  .so-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; position: sticky; bottom: 0; background: var(--white); }
+
   /* ── MODAL OVERLAY ────────────────────────────── */
   .modal-overlay {
     position: fixed; inset: 0;
@@ -1378,6 +1419,93 @@
 </div><!-- /main -->
 
 <!-- ── MODALS ─────────────────────────────────── -->
+<!-- LEAD DETAIL SLIDE-OVER -->
+<div class="slideover-overlay" id="lead-slideover" onclick="closeSlideover(event)">
+  <div class="slideover">
+    <div class="so-header">
+      <div class="so-header-info">
+        <div class="so-name" id="so-name">—</div>
+        <div class="so-email" id="so-email">—</div>
+      </div>
+      <div id="so-status-badge"></div>
+      <button class="so-close" onclick="document.getElementById('lead-slideover').classList.remove('open')">✕</button>
+    </div>
+    <div class="so-body">
+
+      <!-- Estimate summary -->
+      <div class="so-section">
+        <div class="so-section-title">Estimate</div>
+        <div class="so-grid">
+          <div class="so-field">
+            <div class="so-field-label">Estimate Value</div>
+            <div class="so-field-value big" id="so-estimate">—</div>
+          </div>
+          <div class="so-field">
+            <div class="so-field-label">Range</div>
+            <div class="so-field-value mono" id="so-range">—</div>
+          </div>
+          <div class="so-field">
+            <div class="so-field-label">Lead UID</div>
+            <div class="so-field-value mono" id="so-lead-uid">—</div>
+          </div>
+          <div class="so-field">
+            <div class="so-field-label">Submitted</div>
+            <div class="so-field-value" id="so-submitted">—</div>
+          </div>
+          <div class="so-field">
+            <div class="so-field-label">Phone</div>
+            <div class="so-field-value" id="so-phone">—</div>
+          </div>
+          <div class="so-field">
+            <div class="so-field-label">CRM Sync</div>
+            <div class="so-field-value" id="so-crm">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answers -->
+      <div class="so-section" id="so-answers-section">
+        <div class="so-section-title">Answers</div>
+        <div class="so-answers" id="so-answers"></div>
+      </div>
+
+      <!-- Status -->
+      <div class="so-section">
+        <div class="so-section-title">Lead Status</div>
+        <select class="so-select" id="so-status-select" onchange="updateLeadStatus(this.value)">
+          <option value="new">New</option>
+          <option value="contacted">Contacted</option>
+          <option value="qualified">Qualified</option>
+          <option value="converted">Converted</option>
+          <option value="lost">Lost</option>
+        </select>
+      </div>
+
+      <!-- Notes -->
+      <div class="so-section">
+        <div class="so-section-title">Notes</div>
+        <div class="so-notes-history" id="so-notes-history"></div>
+        <textarea class="so-textarea" id="so-note-input" placeholder="Add a note…"></textarea>
+        <button class="btn btn-ghost btn-sm" style="align-self:flex-end;margin-top:6px" onclick="addLeadNote()">Add Note</button>
+      </div>
+
+      <!-- Event Timeline -->
+      <div class="so-section" id="so-timeline-section">
+        <div class="so-section-title">Event Timeline</div>
+        <div class="so-timeline" id="so-timeline">
+          <div style="font-size:12px;color:var(--ink-3);padding:8px 0">Loading events…</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="so-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('lead-slideover').classList.remove('open')">Close</button>
+      <button class="btn btn-ghost btn-sm" id="so-sync-btn" onclick="syncLeadFromSlideover()">↺ Sync to CRM</button>
+      <button class="btn btn-primary" style="margin-left:auto" onclick="saveLeadChanges()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-new-estimator" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-title">New Estimator</div>
@@ -1661,7 +1789,7 @@ async function loadLeads() {
       <td style="font-size:12px;color:var(--ink-3)">${timeAgo(l.created_at)}</td>
       <td>${l.crm_status==='failed' ?
         `<button class="btn btn-ghost btn-sm" onclick="retrySyncLead('${l.id}')">Sync Now</button>` :
-        `<button class="btn btn-ghost btn-sm">View</button>`
+        `<button class="btn btn-ghost btn-sm" onclick="openLeadDetail('${l.id}')">View</button>`
       }</td>
     </tr>`
   }).join('')
@@ -1682,6 +1810,177 @@ async function retrySyncLead(leadId) {
   if (error) { showToast('✗ ' + error.message); return }
   showToast('↺ Sync triggered')
   loadLeads()
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  LEAD DETAIL SLIDE-OVER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let currentLeadId = null
+let currentLeadNotes = []
+
+async function openLeadDetail(leadId) {
+  currentLeadId = leadId
+  currentLeadNotes = []
+
+  // Open panel immediately with loading state
+  document.getElementById('lead-slideover').classList.add('open')
+  document.getElementById('so-name').textContent    = 'Loading…'
+  document.getElementById('so-email').textContent   = ''
+  document.getElementById('so-answers').innerHTML   = '<div style="color:var(--ink-3);font-size:12px">Loading…</div>'
+  document.getElementById('so-timeline').innerHTML  = '<div style="color:var(--ink-3);font-size:12px;padding:8px 0">Loading events…</div>'
+
+  // Fetch full lead
+  const { data: lead, error } = await sb.from('leads')
+    .select('*')
+    .eq('id', leadId)
+    .single()
+
+  if (error || !lead) { showToast('✗ Could not load lead'); return }
+
+  // Populate header
+  document.getElementById('so-name').textContent  = lead.full_name || 'Anonymous'
+  document.getElementById('so-email').textContent = lead.email    || '—'
+  document.getElementById('so-status-badge').innerHTML = `<span class="badge ${statusBadgeClass(lead.status)}">${lead.status || 'new'}</span>`
+
+  // Estimate
+  const val = lead.estimate_result?.total || lead.estimate_result?.value || null
+  const low = lead.estimate_result?.low   || null
+  const high= lead.estimate_result?.high  || null
+  document.getElementById('so-estimate').textContent = val  ? fmtMoney(val) : '—'
+  document.getElementById('so-range').textContent    = (low && high) ? fmtMoney(low) + ' – ' + fmtMoney(high) : '—'
+  document.getElementById('so-lead-uid').textContent = lead.lead_uid  || lead.id?.slice(0,12)
+  document.getElementById('so-submitted').textContent= lead.created_at ? new Date(lead.created_at).toLocaleString() : '—'
+  document.getElementById('so-phone').textContent    = lead.phone || '—'
+
+  // CRM badge
+  const crmClass = lead.crm_status === 'synced' ? 'badge-green' : lead.crm_status === 'failed' ? 'badge-red' : 'badge-amber'
+  document.getElementById('so-crm').innerHTML = `<span class="badge ${crmClass}">${lead.crm_status || 'pending'}</span>${lead.crm_retry_count > 0 ? ' <span style="font-size:11px;color:var(--ink-3)">retry ' + lead.crm_retry_count + '/5</span>' : ''}`
+
+  // Status select
+  document.getElementById('so-status-select').value = lead.status || 'new'
+
+  // Answers
+  const answersEl = document.getElementById('so-answers')
+  if (lead.answers && Object.keys(lead.answers).length) {
+    answersEl.innerHTML = Object.entries(lead.answers).map(([k, v]) => `
+      <div class="so-answer-row">
+        <span class="so-answer-key">${k.replace(/_/g,' ')}</span>
+        <span class="so-answer-val">${v}</span>
+      </div>`).join('')
+  } else {
+    answersEl.innerHTML = '<div style="color:var(--ink-3);font-size:12px">No answers recorded</div>'
+  }
+
+  // Notes
+  currentLeadNotes = lead.notes ? (typeof lead.notes === 'string' ? JSON.parse(lead.notes) : lead.notes) : []
+  if (!Array.isArray(currentLeadNotes)) currentLeadNotes = []
+  renderNotes()
+
+  // Load event timeline
+  loadLeadTimeline(lead.visitor_session_id)
+}
+
+function renderNotes() {
+  const el = document.getElementById('so-notes-history')
+  if (!currentLeadNotes.length) {
+    el.innerHTML = '<div style="color:var(--ink-3);font-size:12px;padding:4px 0">No notes yet</div>'
+    return
+  }
+  el.innerHTML = currentLeadNotes.slice().reverse().map(n => `
+    <div class="so-note">
+      <div class="so-note-meta">${new Date(n.at).toLocaleString()}</div>
+      <div class="so-note-text">${n.text}</div>
+    </div>`).join('')
+}
+
+async function loadLeadTimeline(sessionId) {
+  const el = document.getElementById('so-timeline')
+  if (!sessionId) { el.innerHTML = '<div style="color:var(--ink-3);font-size:12px;padding:8px 0">No session data</div>'; return }
+
+  const { data: events } = await sb.from('estimator_events')
+    .select('event_type, step_key, occurred_at, payload')
+    .eq('visitor_session_id', sessionId)
+    .order('occurred_at', { ascending: true })
+
+  if (!events?.length) {
+    el.innerHTML = '<div style="color:var(--ink-3);font-size:12px;padding:8px 0">No events recorded</div>'
+    return
+  }
+
+  const eventColors = {
+    view: '#60a5fa', step_start: '#a78bfa', step_complete: '#34d399',
+    step_back: '#fbbf24', result_view: '#f472b6', lead_submit: '#10b981'
+  }
+
+  el.innerHTML = events.map(e => `
+    <div class="so-event">
+      <div class="so-event-dot" style="background:${eventColors[e.event_type] || '#94a3b8'}"></div>
+      <div>
+        <div class="so-event-type">${e.event_type}${e.step_key ? ' · ' + e.step_key : ''}</div>
+        <div class="so-event-time">${new Date(e.occurred_at).toLocaleString()}</div>
+      </div>
+    </div>`).join('')
+}
+
+async function updateLeadStatus(newStatus) {
+  if (!currentLeadId) return
+  const { error } = await sb.from('leads')
+    .update({ status: newStatus })
+    .eq('id', currentLeadId)
+  if (error) { showToast('✗ ' + error.message); return }
+
+  // Update badge in slideover header
+  document.getElementById('so-status-badge').innerHTML = `<span class="badge ${statusBadgeClass(newStatus)}">${newStatus}</span>`
+  showToast('✓ Status updated to ' + newStatus)
+  loadLeads()
+}
+
+async function addLeadNote() {
+  const input = document.getElementById('so-note-input')
+  const text  = input.value.trim()
+  if (!text) return
+
+  currentLeadNotes.push({ text, at: new Date().toISOString() })
+
+  const { error } = await sb.from('leads')
+    .update({ notes: JSON.stringify(currentLeadNotes) })
+    .eq('id', currentLeadId)
+
+  if (error) { showToast('✗ ' + error.message); currentLeadNotes.pop(); return }
+
+  input.value = ''
+  renderNotes()
+  showToast('✓ Note added')
+}
+
+async function saveLeadChanges() {
+  // Status is already saved on change — just close and refresh
+  showToast('✓ Changes saved')
+  document.getElementById('lead-slideover').classList.remove('open')
+  loadLeads()
+}
+
+async function syncLeadFromSlideover() {
+  if (!currentLeadId) return
+  const { error } = await sb.from('leads').update({
+    crm_status:    'pending',
+    next_retry_at: new Date().toISOString()
+  }).eq('id', currentLeadId)
+  if (error) { showToast('✗ ' + error.message); return }
+  showToast('↺ CRM sync triggered')
+  // Reload lead detail
+  openLeadDetail(currentLeadId)
+}
+
+function closeSlideover(e) {
+  if (e.target === document.getElementById('lead-slideover'))
+    document.getElementById('lead-slideover').classList.remove('open')
+}
+
+function statusBadgeClass(status) {
+  return status === 'converted' ? 'badge-green' :
+         status === 'qualified' ? 'badge-brand' :
+         status === 'lost'      ? 'badge-red'   : 'badge-amber'
 }
 
 async function exportLeadsCSV() {
