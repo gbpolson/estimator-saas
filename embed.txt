@@ -250,7 +250,10 @@ async function boot() {
       }
 
       // Create visitor session
-      const { data: sess } = await sb.from('visitor_sessions').insert({
+      // Generate a UUID for the session so we know the ID without needing SELECT back
+      const sessionUID = crypto.randomUUID()
+      const { error: sessErr } = await sb.from('visitor_sessions').insert({
+        id:                   sessionUID,
         visitor_uid:          visitorUID,
         estimator_id:         est.id,
         estimator_version_id: est.published_version_id || null,
@@ -258,8 +261,9 @@ async function boot() {
         user_agent:           navigator.userAgent,
         started_at:           new Date().toISOString(),
         completed:            false,
-      }).select('id').single()
-      sessionId = sess?.id
+      })
+      sessionId = sessErr ? null : sessionUID
+      if (sessErr) console.warn('Session insert error:', sessErr.message)
     }
 
     await fireEvent('view')
