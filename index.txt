@@ -1,0 +1,2502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estimator SaaS — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:       #0f1117;
+    --ink-2:     #3a3f4b;
+    --ink-3:     #7a808f;
+    --border:    #e4e6eb;
+    --surface:   #f7f8fa;
+    --white:     #ffffff;
+    --brand:     #1a56db;
+    --brand-dim: #e8effe;
+    --green:     #0e7a45;
+    --green-dim: #dcf5e8;
+    --amber:     #b45309;
+    --amber-dim: #fef3c7;
+    --red:       #be123c;
+    --red-dim:   #ffe4e6;
+    --purple:    #6d28d9;
+    --purple-dim:#ede9fe;
+    --radius:    10px;
+    --shadow:    0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.04);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,.10);
+    --font:      'DM Sans', sans-serif;
+    --mono:      'DM Mono', monospace;
+    --serif:     'Fraunces', serif;
+    --nav-w:     220px;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--surface);
+    color: var(--ink);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── SIDEBAR ─────────────────────────────────── */
+  .sidebar {
+    width: var(--nav-w);
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    padding: 0 0 16px;
+  }
+
+  .sidebar-logo {
+    padding: 22px 20px 18px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    margin-bottom: 8px;
+  }
+  .sidebar-logo span {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 18px;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+  .sidebar-logo em {
+    font-style: normal;
+    color: #60a5fa;
+  }
+
+  .sidebar-section {
+    padding: 6px 12px 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.28);
+    margin-top: 10px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    margin: 1px 8px;
+    border-radius: 7px;
+    color: rgba(255,255,255,.60);
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: all .15s;
+    user-select: none;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.9); }
+  .nav-item.active { background: rgba(96,165,250,.15); color: #93c5fd; font-weight: 500; }
+  .nav-item .icon { width: 16px; text-align: center; font-size: 15px; opacity: .9; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 99px;
+    font-family: var(--mono);
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 12px 16px 4px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .user-pill:hover { background: rgba(255,255,255,.06); }
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #6d28d9);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: #fff;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; color: rgba(255,255,255,.75); font-weight: 500; }
+  .user-plan { font-size: 11px; color: rgba(255,255,255,.35); }
+
+  /* ── MAIN ─────────────────────────────────────── */
+  .main {
+    margin-left: var(--nav-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ── TOPBAR ───────────────────────────────────── */
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar-title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    letter-spacing: -0.3px;
+  }
+  .topbar-sub {
+    font-size: 13px;
+    color: var(--ink-3);
+    margin-left: 2px;
+  }
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--font);
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: #1447c0; }
+  .btn-ghost { background: transparent; color: var(--ink-2); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { background: var(--red-dim); color: var(--red); }
+  .btn-success { background: var(--green-dim); color: var(--green); }
+
+  /* ── PAGE CONTENT ─────────────────────────────── */
+  .page { padding: 28px; display: none; flex-direction: column; gap: 24px; }
+  .page.active { display: flex; }
+
+  /* ── CARDS ────────────────────────────────────── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .card-header {
+    padding: 18px 22px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .card-body { padding: 18px 22px; }
+
+  /* ── STAT GRID ────────────────────────────────── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .stat-card.blue::before  { background: var(--brand); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.amber::before { background: #f59e0b; }
+  .stat-card.purple::before{ background: var(--purple); }
+
+  .stat-label { font-size: 12px; font-weight: 500; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .stat-value { font-family: var(--serif); font-size: 32px; font-weight: 600; color: var(--ink); letter-spacing: -1px; line-height: 1; }
+  .stat-delta { margin-top: 8px; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+  .delta-up   { color: var(--green); }
+  .delta-down { color: var(--red); }
+
+  /* ── CHART ────────────────────────────────────── */
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 120px;
+    padding: 0 4px;
+  }
+  .bar-group { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .bars { display: flex; align-items: flex-end; gap: 2px; height: 100px; }
+  .bar {
+    border-radius: 3px 3px 0 0;
+    width: 10px;
+    transition: opacity .15s;
+  }
+  .bar:hover { opacity: .75; cursor: pointer; }
+  .bar-label { font-size: 10px; color: var(--ink-3); font-family: var(--mono); }
+
+  /* ── TABLE ────────────────────────────────────── */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--ink-2);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface); }
+
+  /* ── BADGES ───────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--mono);
+  }
+  .badge-green  { background: var(--green-dim);  color: var(--green); }
+  .badge-amber  { background: var(--amber-dim);  color: var(--amber); }
+  .badge-red    { background: var(--red-dim);    color: var(--red); }
+  .badge-brand  { background: var(--brand-dim);  color: var(--brand); }
+  .badge-purple { background: var(--purple-dim); color: var(--purple); }
+  .badge-grey   { background: var(--surface);    color: var(--ink-3); border: 1px solid var(--border); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ── FUNNEL ───────────────────────────────────── */
+  .funnel { display: flex; flex-direction: column; gap: 8px; }
+  .funnel-step { display: flex; align-items: center; gap: 12px; }
+  .funnel-bar-wrap { flex: 1; background: var(--surface); border-radius: 4px; height: 28px; overflow: hidden; position: relative; }
+  .funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+  .funnel-bar span { font-size: 12px; font-weight: 600; color: #fff; font-family: var(--mono); }
+  .funnel-label { font-size: 12px; color: var(--ink-2); width: 100px; text-align: right; font-weight: 500; }
+  .funnel-pct { font-size: 11px; color: var(--ink-3); width: 42px; font-family: var(--mono); }
+
+  /* ── LEADS PAGE ───────────────────────────────── */
+  .filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .filter-chip {
+    padding: 5px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--ink-2);
+    transition: all .15s;
+  }
+  .filter-chip.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .filter-chip:hover:not(.active) { background: var(--surface); }
+
+  .lead-email { font-weight: 500; color: var(--ink); }
+  .lead-value { font-family: var(--mono); font-weight: 600; color: var(--green); }
+
+  /* ── ESTIMATORS PAGE ──────────────────────────── */
+  .estimator-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .estimator-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+  }
+  .estimator-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: #c7d7fd; }
+  .estimator-name { font-weight: 600; font-size: 15px; color: var(--ink); margin-bottom: 4px; }
+  .estimator-slug { font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin-bottom: 14px; }
+  .estimator-stats { display: flex; gap: 16px; }
+  .e-stat-label { font-size: 11px; color: var(--ink-3); margin-bottom: 2px; }
+  .e-stat-val   { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--ink); }
+  .estimator-actions { display: flex; gap: 6px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .version-dot {
+    position: absolute;
+    top: 14px; right: 14px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--ink-3);
+  }
+
+  /* ── EMBED PAGE ───────────────────────────────── */
+  .embed-preview {
+    background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .fake-widget {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    width: 380px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.12);
+  }
+  .widget-step { margin-bottom: 16px; }
+  .widget-q { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 12px; }
+  .widget-options { display: flex; flex-direction: column; gap: 8px; }
+  .widget-opt {
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .widget-opt.selected { border-color: var(--brand); background: var(--brand-dim); color: var(--brand); font-weight: 500; }
+  .widget-opt:hover:not(.selected) { border-color: #93c5fd; background: #f0f7ff; }
+  .widget-progress { height: 4px; background: var(--border); border-radius: 99px; margin-bottom: 20px; overflow: hidden; }
+  .widget-progress-fill { height: 100%; background: var(--brand); border-radius: 99px; width: 33%; }
+
+  .embed-code {
+    background: var(--ink);
+    color: #a5f3fc;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    width: 100%;
+    max-width: 560px;
+  }
+  .embed-code .tag { color: #93c5fd; }
+  .embed-code .attr { color: #fdba74; }
+  .embed-code .val  { color: #86efac; }
+
+  /* ── CRM RETRY ────────────────────────────────── */
+  .retry-timeline { display: flex; flex-direction: column; gap: 0; }
+  .retry-step {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    position: relative;
+  }
+  .retry-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 42px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .retry-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    font-family: var(--mono);
+  }
+  .retry-content { flex: 1; }
+  .retry-title { font-weight: 600; font-size: 13px; color: var(--ink); }
+  .retry-sub   { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+
+  /* ── ANALYTICS PAGE ───────────────────────────── */
+  .analytics-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+  .mini-stat { padding: 14px 18px; background: var(--surface); border-radius: 8px; }
+  .mini-stat-label { font-size: 11px; color: var(--ink-3); margin-bottom: 4px; }
+  .mini-stat-val { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--ink); }
+
+
+  /* ── LEAD DETAIL SLIDE-OVER ── */
+  .slideover-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200; display: none; justify-content: flex-end; }
+  .slideover-overlay.open { display: flex; }
+  .slideover { width: 560px; max-width: 96vw; background: var(--white); height: 100%; overflow-y: auto; display: flex; flex-direction: column; box-shadow: -8px 0 40px rgba(0,0,0,.15); animation: slideIn .25s cubic-bezier(.4,0,.2,1); }
+  @keyframes slideIn { from { transform: translateX(100%); } to { transform: none; } }
+  .so-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 12px; position: sticky; top: 0; background: var(--white); z-index: 1; }
+  .so-header-info { flex: 1; }
+  .so-name  { font-size: 18px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .so-email { font-size: 13px; color: var(--ink-3); }
+  .so-close { background: none; border: 1px solid var(--border); border-radius: 7px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: var(--ink-3); display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; }
+  .so-close:hover { background: var(--surface); color: var(--ink); }
+  .so-body  { padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; flex: 1; }
+  .so-section { display: flex; flex-direction: column; gap: 10px; }
+  .so-section-title { font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+  .so-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .so-field { background: var(--surface); border-radius: 8px; padding: 10px 12px; }
+  .so-field-label { font-size: 10px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+  .so-field-value { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .so-field-value.mono { font-family: var(--mono); font-size: 12px; }
+  .so-field-value.big  { font-size: 22px; font-weight: 700; color: var(--green); font-family: var(--mono); }
+  .so-answers { display: flex; flex-direction: column; gap: 6px; }
+  .so-answer-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--surface); border-radius: 7px; font-size: 13px; }
+  .so-answer-key { color: var(--ink-3); max-width: 50%; }
+  .so-answer-val { font-weight: 500; color: var(--ink); text-align: right; max-width: 50%; }
+  .so-timeline { display: flex; flex-direction: column; }
+  .so-event { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .so-event:last-child { border-bottom: none; }
+  .so-event-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); margin-top: 5px; flex-shrink: 0; }
+  .so-event-type { font-size: 12px; font-weight: 600; color: var(--ink); font-family: var(--mono); }
+  .so-event-time { font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+  .so-select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; font-family: var(--font); color: var(--ink); background: var(--white); outline: none; cursor: pointer; }
+  .so-select:focus { border-color: var(--brand); }
+  .so-textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; font-family: var(--font); color: var(--ink); background: var(--white); outline: none; resize: vertical; min-height: 80px; transition: border .15s; }
+  .so-textarea:focus { border-color: var(--brand); }
+  .so-notes-history { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .so-note { background: var(--surface); border-radius: 8px; padding: 10px 12px; }
+  .so-note-meta { font-size: 11px; color: var(--ink-3); margin-bottom: 4px; }
+  .so-note-text { font-size: 13px; color: var(--ink); line-height: 1.5; }
+  .so-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; position: sticky; bottom: 0; background: var(--white); }
+
+  /* ── MODAL OVERLAY ────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,17,23,.45);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    padding: 28px;
+    width: 480px;
+    max-width: 95vw;
+    animation: slideUp .2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-title { font-family: var(--serif); font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--ink-3); margin-bottom: 22px; }
+  .form-field { margin-bottom: 16px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; display: block; }
+  .form-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: var(--font);
+    color: var(--ink);
+    background: var(--white);
+    outline: none;
+    transition: border .15s;
+  }
+  .form-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-dim); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ── TOAST ────────────────────────────────────── */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    animation: toastIn .25s ease;
+  }
+  .toast.show { display: flex; }
+  @keyframes toastIn { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* ── SEARCH ───────────────────────────────────── */
+  .search-input {
+    padding: 7px 12px 7px 34px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: var(--font);
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a808f' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 11px center;
+    outline: none;
+    width: 220px;
+    transition: border .15s;
+  }
+  .search-input:focus { border-color: var(--brand); background-color: var(--white); }
+
+  /* ── EMPTY STATE ──────────────────────────────── */
+  .empty { text-align: center; padding: 48px 20px; color: var(--ink-3); }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+  .empty h3 { font-size: 15px; font-weight: 600; color: var(--ink-2); margin-bottom: 6px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  /* Tab bar */
+  .tab-bar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 22px; }
+  .tab {
+    padding: 11px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all .15s;
+  }
+  .tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+  .tab:hover:not(.active) { color: var(--ink-2); }
+
+  select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a808f' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<!-- ── AUTH GATE ─────────────────────────────────── -->
+<div id="auth-gate" style="display:none;position:fixed;inset:0;background:var(--surface);z-index:999;align-items:center;justify-content:center">
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:36px;width:380px;box-shadow:var(--shadow-lg)">
+    <div style="font-family:var(--serif);font-size:24px;font-weight:600;color:var(--ink);margin-bottom:4px">EstimatorSaaS</div>
+    <div style="font-size:13px;color:var(--ink-3);margin-bottom:24px">Sign in to your dashboard</div>
+    <div class="form-field"><label class="form-label">Email</label><input id="login-email" class="form-input" type="email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="form-field"><label class="form-label">Password</label><input id="login-pass" class="form-input" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div id="login-error" style="color:var(--red);font-size:12px;margin-bottom:12px;min-height:16px"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Sign In</button>
+    <div style="font-size:12px;color:var(--ink-3);text-align:center;margin-top:16px">First time? <a href="#" style="color:var(--brand)" onclick="showToast('Use Supabase Auth dashboard to create your first user');return false">Create account in Supabase</a></div>
+  </div>
+</div>
+
+<div id="app-shell" style="display:none;width:100%;min-height:100vh;display:flex">
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span>Estimator<em>SaaS</em></span>
+  </div>
+
+  <div class="sidebar-section">Workspace</div>
+  <div class="nav-item active" onclick="navigate('overview')">
+    <span class="icon">◈</span> Overview
+  </div>
+  <div class="nav-item" onclick="navigate('estimators')">
+    <span class="icon">⊞</span> Estimators
+  </div>
+  <div class="nav-item" onclick="navigate('leads')">
+    <span class="icon">◎</span> Leads
+    <span class="nav-badge">12</span>
+  </div>
+  <div class="nav-item" onclick="navigate('analytics')">
+    <span class="icon">⟁</span> Analytics
+  </div>
+
+  <div class="sidebar-section">Integrations</div>
+  <div class="nav-item" onclick="navigate('embed')">
+    <span class="icon">⊡</span> Embed & Widget
+  </div>
+  <div class="nav-item" onclick="navigate('crm')">
+    <span class="icon">↺</span> CRM / Webhooks
+  </div>
+
+  <div class="sidebar-section">Account</div>
+  <div class="nav-item" onclick="navigate('settings')">
+    <span class="icon">⊙</span> Settings
+  </div>
+  <div class="nav-item" onclick="navigate('billing')">
+    <span class="icon">◇</span> Billing
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-pill" onclick="doLogout()" title="Sign out">
+      <div class="avatar">JD</div>
+      <div>
+        <div class="user-name">Jordan Davis</div>
+        <div class="user-plan">Pro Plan</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ── PAGE: OVERVIEW ─────────────────────────── -->
+  <div id="page-overview" class="page active">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Overview</div>
+      </div>
+      <div class="topbar-actions">
+        <select class="form-input btn-sm" style="width:140px;font-size:12px">
+          <option>Last 30 days</option>
+          <option>Last 7 days</option>
+          <option>This month</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='builder.html'">+ New Estimator</button>
+      </div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:24px">
+      <!-- Stats -->
+      <div class="stat-grid">
+        <div class="stat-card blue">
+          <div class="stat-label">Total Views</div>
+          <div class="stat-value" id="stat-views">—</div>
+          <div class="stat-delta delta-up">↑ 18% vs prior period</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Leads Captured</div>
+          <div class="stat-value" id="stat-leads">—</div>
+          <div class="stat-delta delta-up">↑ 24% vs prior period</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Conversion Rate</div>
+          <div class="stat-value" id="stat-cvr">—</div>
+          <div class="stat-delta delta-down">↓ 0.4% vs prior period</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">CRM Synced</div>
+          <div class="stat-value" id="stat-synced">—</div>
+          <div class="stat-delta delta-up">↑ 92% sync rate</div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Views & Leads — Daily</div>
+            <div style="display:flex;gap:12px;font-size:11px;color:var(--ink-3)">
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:var(--brand);display:inline-block"></span>Views</span>
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:var(--green);display:inline-block"></span>Leads</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-bars">
+              <!-- 14 day bars -->
+              <script>
+                const days = ['M','T','W','T','F','S','S','M','T','W','T','F','S','S'];
+                const views = [120,145,98,160,185,210,80,130,155,170,195,220,90,148];
+                const leads = [8,11,6,13,15,18,5,9,12,14,16,19,6,11];
+              </script>
+              <!-- rendered below via JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Funnel Breakdown</div></div>
+          <div class="card-body">
+            <div class="funnel">
+              <div class="funnel-step">
+                <div class="funnel-label">Widget Views</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:100%;background:var(--brand)"><span>4,821</span></div>
+                </div>
+                <div class="funnel-pct">100%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label">Step 1</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:74%;background:#3b82f6"><span>3,568</span></div>
+                </div>
+                <div class="funnel-pct">74%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label">Step 2</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:48%;background:#60a5fa"><span>2,314</span></div>
+                </div>
+                <div class="funnel-pct">48%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label">Result View</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:28%;background:#93c5fd"><span>1,350</span></div>
+                </div>
+                <div class="funnel-pct">28%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label">Lead Submit</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:6.5%;background:var(--green)"><span>312</span></div>
+                </div>
+                <div class="funnel-pct">6.5%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent leads -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Leads</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('leads')">View all →</button>
+        </div>
+        <div class="card-body" style="padding-top:12px">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name / Email</th>
+                <th>Estimator</th>
+                <th>Estimate Value</th>
+                <th>CRM</th>
+                <th>Submitted</th>
+              </tr>
+            </thead>
+            <tbody id="recent-leads-body">
+              <tr>
+                <td><div class="lead-email">Sarah Chen</div><div style="font-size:11px;color:var(--ink-3)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9eedb0fdf6fbf0deeafbfdf6fdf1b0f7f1">[email&#160;protected]</a></div></td>
+                <td>Roof Repair Cost</td>
+                <td class="lead-value">$4,200</td>
+                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
+                <td style="color:var(--ink-3);font-size:12px">2 min ago</td>
+              </tr>
+              <tr>
+                <td><div class="lead-email">Marcus Webb</div><div style="font-size:11px;color:var(--ink-3)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9df0b3eaf8ffffddfaf0fcf4f1b3fef2f0">[email&#160;protected]</a></div></td>
+                <td>Kitchen Remodel</td>
+                <td class="lead-value">$18,500</td>
+                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
+                <td style="color:var(--ink-3);font-size:12px">14 min ago</td>
+              </tr>
+              <tr>
+                <td><div class="lead-email">Priya Nair</div><div style="font-size:11px;color:var(--ink-3)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a7d7d5cedec6e7c9c6ced5cfc8cac2d489c4c8ca">[email&#160;protected]</a></div></td>
+                <td>Solar Panel Install</td>
+                <td class="lead-value">$9,800</td>
+                <td><span class="badge badge-amber"><span class="dot"></span>Pending</span></td>
+                <td style="color:var(--ink-3);font-size:12px">1 hr ago</td>
+              </tr>
+              <tr>
+                <td><div class="lead-email">Tom Ruiz</div><div style="font-size:11px;color:var(--ink-3)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="92e6e0e7fbe8d2f0e7fbfef6f1fdbcfcf7e6">[email&#160;protected]</a></div></td>
+                <td>Roof Repair Cost</td>
+                <td class="lead-value">$2,100</td>
+                <td><span class="badge badge-red"><span class="dot"></span>Failed</span></td>
+                <td style="color:var(--ink-3);font-size:12px">3 hr ago</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: ESTIMATORS ───────────────────────── -->
+  <div id="page-estimators" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Estimators</div>
+      <div class="topbar-actions">
+        <input class="search-input" placeholder="Search estimators…">
+        <button class="btn btn-ghost btn-sm" onclick="openModal('new-estimator')">+ Quick Create</button>
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='builder.html'">⊞ Build Estimator</button>
+      </div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="estimator-grid" id="estimators-grid">
+
+        <div class="estimator-card" onclick="navigate('analytics')">
+          <div class="version-dot">v3</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="badge badge-green">Published</span>
+          </div>
+          <div class="estimator-name">Roof Repair Cost</div>
+          <div class="estimator-slug">/embed/roof-repair-cost</div>
+          <div class="estimator-stats">
+            <div><div class="e-stat-label">Views</div><div class="e-stat-val">2,140</div></div>
+            <div><div class="e-stat-label">Leads</div><div class="e-stat-val">148</div></div>
+            <div><div class="e-stat-label">CVR</div><div class="e-stat-val">6.9%</div></div>
+          </div>
+          <div class="estimator-actions">
+            <button class="btn btn-ghost btn-sm">Edit Draft</button>
+            <button class="btn btn-ghost btn-sm">Analytics</button>
+            <button class="btn btn-success btn-sm">Published</button>
+          </div>
+        </div>
+
+        <div class="estimator-card">
+          <div class="version-dot">v1</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="badge badge-green">Published</span>
+          </div>
+          <div class="estimator-name">Kitchen Remodel</div>
+          <div class="estimator-slug">/embed/kitchen-remodel</div>
+          <div class="estimator-stats">
+            <div><div class="e-stat-label">Views</div><div class="e-stat-val">1,390</div></div>
+            <div><div class="e-stat-label">Leads</div><div class="e-stat-val">97</div></div>
+            <div><div class="e-stat-label">CVR</div><div class="e-stat-val">7.0%</div></div>
+          </div>
+          <div class="estimator-actions">
+            <button class="btn btn-ghost btn-sm">Edit Draft</button>
+            <button class="btn btn-ghost btn-sm">Analytics</button>
+            <button class="btn btn-success btn-sm">Published</button>
+          </div>
+        </div>
+
+        <div class="estimator-card">
+          <div class="version-dot">v2</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="badge badge-amber">Draft</span>
+          </div>
+          <div class="estimator-name">Solar Panel Install</div>
+          <div class="estimator-slug">/embed/solar-panel-install</div>
+          <div class="estimator-stats">
+            <div><div class="e-stat-label">Views</div><div class="e-stat-val">491</div></div>
+            <div><div class="e-stat-label">Leads</div><div class="e-stat-val">31</div></div>
+            <div><div class="e-stat-label">CVR</div><div class="e-stat-val">6.3%</div></div>
+          </div>
+          <div class="estimator-actions">
+            <button class="btn btn-ghost btn-sm">Edit Draft</button>
+            <button class="btn btn-ghost btn-sm">Analytics</button>
+            <button class="btn btn-primary btn-sm" onclick="showToast('✓ Published successfully')">Publish</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Version history panel -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Version History — Roof Repair Cost</div></div>
+        <div class="card-body" style="padding-top:12px">
+          <table class="data-table">
+            <thead>
+              <tr><th>Version</th><th>Published By</th><th>Change Summary</th><th>Published</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span style="font-family:var(--mono);font-weight:600">v3</span></td>
+                <td>Jordan Davis</td>
+                <td>Added budget qualifier step, updated result copy</td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 8, 2026</td>
+                <td><span class="badge badge-green">Active</span></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td><span style="font-family:var(--mono);font-weight:600">v2</span></td>
+                <td>Jordan Davis</td>
+                <td>Reordered questions, new lead form layout</td>
+                <td style="font-size:12px;color:var(--ink-3)">Feb 22, 2026</td>
+                <td><span class="badge badge-grey">Inactive</span></td>
+                <td><button class="btn btn-ghost btn-sm" onclick="showToast('↺ Rolled back to v2')">Rollback</button></td>
+              </tr>
+              <tr>
+                <td><span style="font-family:var(--mono);font-weight:600">v1</span></td>
+                <td>Jordan Davis</td>
+                <td>Initial publish</td>
+                <td style="font-size:12px;color:var(--ink-3)">Feb 10, 2026</td>
+                <td><span class="badge badge-grey">Inactive</span></td>
+                <td><button class="btn btn-ghost btn-sm" onclick="showToast('↺ Rolled back to v1')">Rollback</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: LEADS ────────────────────────────── -->
+  <div id="page-leads" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Leads</div>
+      <div class="topbar-actions">
+        <input class="search-input" placeholder="Search leads…">
+        <button class="btn btn-ghost btn-sm" onclick="exportLeadsCSV()">⬇ Export CSV</button>
+      </div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="filter-row">
+        <span style="font-size:12px;font-weight:600;color:var(--ink-3)">Status:</span>
+        <div class="filter-chip active" onclick="filterChip(this)">All</div>
+        <div class="filter-chip" onclick="setLeadsFilter('status','new',this)">New</div>
+        <div class="filter-chip" onclick="setLeadsFilter('status','contacted',this)">Contacted</div>
+        <div class="filter-chip" onclick="setLeadsFilter('status','qualified',this)">Qualified</div>
+        <div class="filter-chip" onclick="setLeadsFilter('status','converted',this)">Converted</div>
+        <span style="font-size:12px;font-weight:600;color:var(--ink-3);margin-left:12px">CRM:</span>
+        <div class="filter-chip" onclick="setLeadsFilter('crm_status','pending',this)">Pending</div>
+        <div class="filter-chip" onclick="setLeadsFilter('crm_status','failed',this)">Failed</div>
+        <div id="leads-count" style="margin-left:auto;font-size:12px;color:var(--ink-3)">— results</div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="padding-left:20px">Lead</th>
+                <th>Estimator</th>
+                <th>Estimate</th>
+                <th>Status</th>
+                <th>CRM Sync</th>
+                <th>Submitted</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="leads-table-body">
+              <tr>
+                <td style="padding-left:20px">
+                  <div class="lead-email">Sarah Chen</div>
+                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_7a2b9c</div>
+                </td>
+                <td>Roof Repair Cost</td>
+                <td class="lead-value">$4,200</td>
+                <td><span class="badge badge-brand">New</span></td>
+                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 14:22</td>
+                <td><button class="btn btn-ghost btn-sm">View</button></td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px">
+                  <div class="lead-email">Marcus Webb</div>
+                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_4f8e1d</div>
+                </td>
+                <td>Kitchen Remodel</td>
+                <td class="lead-value">$18,500</td>
+                <td><span class="badge badge-green">Qualified</span></td>
+                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 13:48</td>
+                <td><button class="btn btn-ghost btn-sm">View</button></td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px">
+                  <div class="lead-email">Priya Nair</div>
+                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_9c3a7f</div>
+                </td>
+                <td>Solar Panel Install</td>
+                <td class="lead-value">$9,800</td>
+                <td><span class="badge badge-brand">New</span></td>
+                <td><span class="badge badge-amber"><span class="dot"></span>Pending</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 13:05</td>
+                <td><button class="btn btn-ghost btn-sm">View</button></td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px">
+                  <div class="lead-email">Tom Ruiz</div>
+                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_2b5d8e</div>
+                </td>
+                <td>Roof Repair Cost</td>
+                <td class="lead-value">$2,100</td>
+                <td><span class="badge badge-brand">New</span></td>
+                <td><span class="badge badge-red"><span class="dot"></span>Failed · retry 2/5</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 11:30</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="showToast('↺ Manual sync triggered')">Sync Now</button></td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px">
+                  <div class="lead-email">Aisha Okonkwo</div>
+                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_6e1f4a</div>
+                </td>
+                <td>Kitchen Remodel</td>
+                <td class="lead-value">$24,000</td>
+                <td><span class="badge badge-purple">Converted</span></td>
+                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
+                <td style="font-size:12px;color:var(--ink-3)">Mar 8, 16:14</td>
+                <td><button class="btn btn-ghost btn-sm">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: ANALYTICS ───────────────────────── -->
+  <div id="page-analytics" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Analytics</div>
+      <div class="topbar-actions">
+        <select class="form-input btn-sm" style="width:160px;font-size:12px">
+          <option>Roof Repair Cost</option>
+          <option>Kitchen Remodel</option>
+          <option>Solar Panel Install</option>
+        </select>
+        <select class="form-input btn-sm" style="width:130px;font-size:12px">
+          <option>Last 30 days</option>
+          <option>Last 7 days</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="stat-grid">
+        <div class="stat-card blue"><div class="stat-label">Views</div><div class="stat-value" id="ana-views">—</div><div class="stat-delta delta-up">↑ 22%</div></div>
+        <div class="stat-card green"><div class="stat-label">Completions</div><div class="stat-value" id="ana-submits">—</div><div class="stat-delta delta-up">↑ 15%</div></div>
+        <div class="stat-card amber"><div class="stat-label">Leads</div><div class="stat-value" id="ana-leads">—</div><div class="stat-delta delta-up">↑ 31%</div></div>
+        <div class="stat-card purple"><div class="stat-label">Avg. Estimate</div><div class="stat-value">$3,840</div><div class="stat-delta delta-up">↑ 8%</div></div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Step Drop-off</div></div>
+          <div class="card-body">
+            <div class="funnel">
+              <div class="funnel-step">
+                <div class="funnel-label" style="font-size:11px">Widget Load</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:100%;background:var(--brand)"><span>2,140</span></div>
+                </div><div class="funnel-pct">100%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label" style="font-size:11px">Roof Type</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:80%;background:#3b82f6"><span>1,712</span></div>
+                </div><div class="funnel-pct">80%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label" style="font-size:11px">Sq. Footage</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:58%;background:#60a5fa"><span>1,241</span></div>
+                </div><div class="funnel-pct">58%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label" style="font-size:11px">Material</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:42%;background:#93c5fd"><span>899</span></div>
+                </div><div class="funnel-pct">42%</div>
+              </div>
+              <div class="funnel-step">
+                <div class="funnel-label" style="font-size:11px">Lead Submit</div>
+                <div class="funnel-bar-wrap">
+                  <div class="funnel-bar" style="width:6.9%;background:var(--green)"><span>148</span></div>
+                </div><div class="funnel-pct">6.9%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Event Breakdown</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px" id="event-breakdown">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span>Result view → no submit</span><span style="font-family:var(--mono);font-weight:600;color:var(--amber)">751</span>
+              </div>
+              <div style="background:var(--surface);border-radius:3px;height:6px"><div style="width:85%;height:6px;border-radius:3px;background:#f59e0b"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span>Material step</span><span style="font-family:var(--mono);font-weight:600;color:var(--red)">342</span>
+              </div>
+              <div style="background:var(--surface);border-radius:3px;height:6px"><div style="width:39%;height:6px;border-radius:3px;background:var(--red)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span>Sq. footage step</span><span style="font-family:var(--mono);font-weight:600;color:var(--ink-3)">471</span>
+              </div>
+              <div style="background:var(--surface);border-radius:3px;height:6px"><div style="width:53%;height:6px;border-radius:3px;background:var(--ink-3)"></div></div>
+            </div>
+
+            <div style="margin-top:8px;padding-top:14px;border-top:1px solid var(--border)">
+              <div class="card-title" style="margin-bottom:12px;font-size:13px">UID Breakdown</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <div class="mini-stat"><div class="mini-stat-label">estimator_uid</div><div class="mini-stat-val" style="font-size:14px;color:var(--brand)">roof-repair-cost</div></div>
+                <div class="mini-stat"><div class="mini-stat-label">visitor_uids</div><div class="mini-stat-val">2,140</div></div>
+                <div class="mini-stat"><div class="mini-stat-label">lead_uids</div><div class="mini-stat-val">148</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: EMBED ────────────────────────────── -->
+  <div id="page-embed" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Embed & Widget</div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Embed Code</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="form-field">
+              <label class="form-label">Select Estimator</label>
+              <select class="form-input">
+                <option>Roof Repair Cost</option>
+                <option>Kitchen Remodel</option>
+              </select>
+            </div>
+            <div class="embed-code">
+              <span class="tag">&lt;iframe</span><br>
+              &nbsp;&nbsp;<span class="attr">src</span>=<span class="val">"https://yourapp.com/embed/roof-repair-cost"</span><br>
+              &nbsp;&nbsp;<span class="attr">width</span>=<span class="val">"100%"</span><br>
+              &nbsp;&nbsp;<span class="attr">height</span>=<span class="val">"520"</span><br>
+              &nbsp;&nbsp;<span class="attr">frameborder</span>=<span class="val">"0"</span><br>
+              <span class="tag">&gt;&lt;/iframe&gt;</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('📋 Copied to clipboard')">Copy Embed Code</button>
+
+            <div style="padding-top:14px;border-top:1px solid var(--border)">
+              <div class="form-label" style="margin-bottom:8px">Domain Allowlist</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+                <span style="background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:5px;font-size:12px;font-family:var(--mono)">yoursite.com <span style="cursor:pointer;color:var(--ink-3)" onclick="showToast('Domain removed')">×</span></span>
+                <span style="background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:5px;font-size:12px;font-family:var(--mono)">staging.yoursite.com <span style="cursor:pointer;color:var(--ink-3)">×</span></span>
+              </div>
+              <div style="display:flex;gap:8px">
+                <input class="form-input" placeholder="add-domain.com" style="flex:1">
+                <button class="btn btn-ghost btn-sm" onclick="showToast('✓ Domain added')">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Live Preview</div></div>
+          <div class="card-body">
+            <div class="embed-preview">
+              <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">iframe src="/embed/roof-repair-cost"</div>
+              <div class="fake-widget">
+                <div style="font-size:12px;font-weight:600;color:var(--brand);margin-bottom:12px">Roof Repair Cost Estimator</div>
+                <div class="widget-progress"><div class="widget-progress-fill"></div></div>
+                <div class="widget-step">
+                  <div class="widget-q">What type of roof do you have?</div>
+                  <div class="widget-options">
+                    <div class="widget-opt selected">Asphalt Shingles</div>
+                    <div class="widget-opt">Metal Roofing</div>
+                    <div class="widget-opt">Tile / Slate</div>
+                    <div class="widget-opt">Flat / TPO</div>
+                  </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px" onclick="showToast('→ Step 2 of 3')">Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: CRM ──────────────────────────────── -->
+  <div id="page-crm" class="page">
+    <div class="topbar">
+      <div class="topbar-title">CRM & Webhooks</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openAddIntegrationModal()">+ Add Integration</button>
+      </div>
+    </div>
+
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+
+      <!-- Active integrations -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Active Integrations</div>
+          <button class="btn btn-ghost btn-sm" onclick="loadIntegrations()">↺ Refresh</button>
+        </div>
+        <div class="card-body" style="padding-top:12px">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Last Sync</th><th>Errors</th><th></th></tr></thead>
+            <tbody id="integrations-table-body">
+              <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-3)">Loading integrations…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Retry flow -->
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">CRM Retry Flow</div></div>
+          <div class="card-body">
+            <div class="retry-timeline">
+              <div class="retry-step">
+                <div class="retry-dot" style="background:var(--green-dim);color:var(--green)">1</div>
+                <div class="retry-content">
+                  <div class="retry-title">Immediate → 5 min retry</div>
+                  <div class="retry-sub">Transient network errors, timeouts</div>
+                </div>
+              </div>
+              <div class="retry-step">
+                <div class="retry-dot" style="background:var(--brand-dim);color:var(--brand)">2</div>
+                <div class="retry-content">
+                  <div class="retry-title">30 minute retry</div>
+                  <div class="retry-sub">Rate limits, temporary 429/503</div>
+                </div>
+              </div>
+              <div class="retry-step">
+                <div class="retry-dot" style="background:var(--amber-dim);color:var(--amber)">3</div>
+                <div class="retry-content">
+                  <div class="retry-title">2 hour retry</div>
+                  <div class="retry-sub">Extended outage window</div>
+                </div>
+              </div>
+              <div class="retry-step">
+                <div class="retry-dot" style="background:var(--amber-dim);color:var(--amber)">4</div>
+                <div class="retry-content">
+                  <div class="retry-title">12 hour retry</div>
+                  <div class="retry-sub">Overnight backoff</div>
+                </div>
+              </div>
+              <div class="retry-step">
+                <div class="retry-dot" style="background:var(--red-dim);color:var(--red)">5+</div>
+                <div class="retry-content">
+                  <div class="retry-title">24 hr · Owner alert sent</div>
+                  <div class="retry-sub">Marked failed_permanent after 7 days</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Retry Queue</div>
+            <span class="badge badge-red" id="retry-count">—</span>
+          </div>
+          <div id="retry-queue" class="card-body" style="padding-top:12px;display:flex;flex-direction:column;gap:10px">
+            <div style="padding:12px;background:var(--red-dim);border-radius:8px;border:1px solid #fecaca">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink)">lead_2b5d8e</span>
+                <span class="badge badge-red">retry 2/5</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-3)">Tom Ruiz · Roof Repair Cost</div>
+              <div style="font-size:11px;color:var(--red);margin-top:4px">Error: 503 Service Unavailable</div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:2px">Next retry: 45 min</div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="showToast('↺ Manual sync triggered')">Sync Now</button>
+            </div>
+            <div style="padding:12px;background:var(--amber-dim);border-radius:8px;border:1px solid #fcd34d">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink)">lead_8a1c3f</span>
+                <span class="badge badge-amber">retry 1/5</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-3)">Jane Park · Kitchen Remodel</div>
+              <div style="font-size:11px;color:var(--amber);margin-top:4px">Error: Rate limit exceeded</div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:2px">Next retry: 18 min</div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="showToast('↺ Manual sync triggered')">Sync Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: SETTINGS ────────────────────────── -->
+  <div id="page-settings" class="page">
+    <div class="topbar"><div class="topbar-title">Settings</div></div>
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Business Profile</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div class="form-field"><label class="form-label">Business Name</label><input id="settings-biz-name" class="form-input" value="Davis Roofing Co."></div>
+            <div class="form-field"><label class="form-label">Slug</label><input id="settings-biz-slug" class="form-input" value="davis-roofing" style="font-family:var(--mono)"></div>
+            <div class="form-field"><label class="form-label">Plan</label><input id="settings-biz-plan" class="form-input" value="Pro" disabled style="color:var(--ink-3)"></div>
+            <button class="btn btn-primary btn-sm" style="align-self:flex-start" onclick="showToast('✓ Settings saved')">Save Changes</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Team Members</div></div>
+          <div class="card-body" style="padding-top:12px">
+            <table class="data-table">
+              <thead><tr><th>Member</th><th>Role</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div style="font-weight:500">Jordan Davis</div><div style="font-size:11px;color:var(--ink-3)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5e34703a3f28372d1e3a3f28372d2c313138373039703d3133">[email&#160;protected]</a></div></td>
+                  <td><span class="badge badge-purple">Owner</span></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td><div style="font-weight:500">Alex Kim</div><div style="font-size:11px;color:var(--ink-3)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0a6b246163674a6e6b7c63797865656c63646d24696567">[email&#160;protected]</a></div></td>
+                  <td><span class="badge badge-brand">Admin</span></td>
+                  <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+                </tr>
+              </tbody>
+            </table>
+            <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showToast('📧 Invite email sent')">+ Invite Member</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: BILLING ─────────────────────────── -->
+  <div id="page-billing" class="page">
+    <div class="topbar"><div class="topbar-title">Billing</div></div>
+    <div style="padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div class="two-col">
+        <div class="card" style="border-color:#c7d7fd">
+          <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:12px;font-weight:600;color:var(--brand);text-transform:uppercase;letter-spacing:.05em">Current Plan</div><div style="font-family:var(--serif);font-size:28px;font-weight:600;color:var(--ink);letter-spacing:-0.5px">Pro</div></div>
+              <span class="badge badge-green">Active</span>
+            </div>
+            <div style="font-size:13px;color:var(--ink-2)">$79 / month · renews Apr 9, 2026</div>
+            <div style="padding-top:12px;border-top:1px solid var(--border)">
+              <div style="font-size:12px;font-weight:600;color:var(--ink-3);margin-bottom:10px">Usage this period</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;justify-content:space-between;font-size:13px"><span>Leads captured</span><span style="font-family:var(--mono);font-weight:600">312 / 1,000</span></div>
+                <div style="background:var(--surface);border-radius:3px;height:5px"><div style="width:31%;height:5px;border-radius:3px;background:var(--brand)"></div></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px"><span>Team members</span><span style="font-family:var(--mono);font-weight:600">2 / 5</span></div>
+                <div style="background:var(--surface);border-radius:3px;height:5px"><div style="width:40%;height:5px;border-radius:3px;background:var(--brand)"></div></div>
+              </div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="align-self:flex-start" onclick="showToast('Opening Stripe portal…')">Manage Billing →</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Plan Comparison</div></div>
+          <div class="card-body" style="padding-top:12px">
+            <table class="data-table">
+              <thead><tr><th>Feature</th><th>Starter</th><th>Pro</th><th>Enterprise</th></tr></thead>
+              <tbody>
+                <tr><td>Estimators</td><td>3</td><td>Unlimited</td><td>Unlimited</td></tr>
+                <tr><td>Leads / mo</td><td>100</td><td>1,000</td><td>Unlimited</td></tr>
+                <tr><td>Team seats</td><td>1</td><td>5</td><td>Unlimited</td></tr>
+                <tr><td>CRM integrations</td><td>1</td><td>3</td><td>Unlimited</td></tr>
+                <tr><td>Analytics</td><td>Basic</td><td>Full</td><td>Full + API</td></tr>
+                <tr><td>Price / mo</td><td style="font-family:var(--mono);font-weight:600">$29</td><td style="font-family:var(--mono);font-weight:600;color:var(--brand)">$79 ✓</td><td style="font-family:var(--mono);font-weight:600">Custom</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ── MODALS ─────────────────────────────────── -->
+<!-- LEAD DETAIL SLIDE-OVER -->
+<div class="slideover-overlay" id="lead-slideover" onclick="closeSlideover(event)">
+  <div class="slideover">
+    <div class="so-header">
+      <div class="so-header-info">
+        <div class="so-name" id="so-name">—</div>
+        <div class="so-email" id="so-email">—</div>
+      </div>
+      <div id="so-status-badge"></div>
+      <button class="so-close" onclick="document.getElementById('lead-slideover').classList.remove('open')">✕</button>
+    </div>
+    <div class="so-body">
+
+      <!-- Estimate summary -->
+      <div class="so-section">
+        <div class="so-section-title">Estimate</div>
+        <div class="so-grid">
+          <div class="so-field">
+            <div class="so-field-label">Estimate Value</div>
+            <div class="so-field-value big" id="so-estimate">—</div>
+          </div>
+          <div class="so-field">
+            <div class="so-field-label">Range</div>
+            <div class="so-field-value mono" id="so-range">—</div>
+          </div>
+          <div class="so-field">
+            <div class="so-field-label">Lead UID</div>
+            <div class="so-field-value mono" id="so-lead-uid">—</div>
+          </div>
+          <div class="so-field">
+            <div class="so-field-label">Submitted</div>
+            <div class="so-field-value" id="so-submitted">—</div>
+          </div>
+          <div class="so-field">
+            <div class="so-field-label">Phone</div>
+            <div class="so-field-value" id="so-phone">—</div>
+          </div>
+          <div class="so-field">
+            <div class="so-field-label">CRM Sync</div>
+            <div class="so-field-value" id="so-crm">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answers -->
+      <div class="so-section" id="so-answers-section">
+        <div class="so-section-title">Answers</div>
+        <div class="so-answers" id="so-answers"></div>
+      </div>
+
+      <!-- Status -->
+      <div class="so-section">
+        <div class="so-section-title">Lead Status</div>
+        <select class="so-select" id="so-status-select" onchange="updateLeadStatus(this.value)">
+          <option value="new">New</option>
+          <option value="contacted">Contacted</option>
+          <option value="qualified">Qualified</option>
+          <option value="converted">Converted</option>
+          <option value="lost">Lost</option>
+        </select>
+      </div>
+
+      <!-- Notes -->
+      <div class="so-section">
+        <div class="so-section-title">Notes</div>
+        <div class="so-notes-history" id="so-notes-history"></div>
+        <textarea class="so-textarea" id="so-note-input" placeholder="Add a note…"></textarea>
+        <button class="btn btn-ghost btn-sm" style="align-self:flex-end;margin-top:6px" onclick="addLeadNote()">Add Note</button>
+      </div>
+
+      <!-- Event Timeline -->
+      <div class="so-section" id="so-timeline-section">
+        <div class="so-section-title">Event Timeline</div>
+        <div class="so-timeline" id="so-timeline">
+          <div style="font-size:12px;color:var(--ink-3);padding:8px 0">Loading events…</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="so-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('lead-slideover').classList.remove('open')">Close</button>
+      <button class="btn btn-ghost btn-sm" id="so-sync-btn" onclick="syncLeadFromSlideover()">↺ Sync to CRM</button>
+      <button class="btn btn-primary" style="margin-left:auto" onclick="saveLeadChanges()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-new-estimator" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">New Estimator</div>
+    <div class="modal-sub">Create a new embeddable cost estimator widget</div>
+    <div class="form-field"><label class="form-label">Estimator Name</label><input id="new-est-name" class="form-input" placeholder="e.g. HVAC Install Cost"></div>
+    <div class="form-field"><label class="form-label">URL Slug</label><input id="new-est-slug" class="form-input" placeholder="hvac-install-cost" style="font-family:var(--mono)"></div>
+    <div class="form-field"><label class="form-label">Description (optional)</label><input id="new-est-desc" class="form-input" placeholder="Internal notes about this estimator"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-new-estimator').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="createEstimator()">Create Estimator</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-crm" onclick="closeModal(event)">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-title" id="crm-modal-title">Add Integration</div>
+    <div class="modal-sub">Connect your leads to an external CRM or webhook</div>
+
+    <div class="form-field">
+      <label class="form-label">Integration Name</label>
+      <input class="form-input" id="crm-name" placeholder="e.g. My HubSpot, Zapier Catch">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Type</label>
+      <select class="form-input" id="crm-type" onchange="updateCRMFields()">
+        <option value="webhook">Webhook (Custom URL)</option>
+        <option value="zapier">Zapier</option>
+        <option value="hubspot">HubSpot</option>
+        <option value="pipedrive">Pipedrive</option>
+      </select>
+    </div>
+
+    <!-- Webhook / Zapier fields -->
+    <div id="crm-fields-webhook">
+      <div class="form-field">
+        <label class="form-label">Webhook URL</label>
+        <input class="form-input" id="crm-webhook-url" placeholder="https://hooks.zapier.com/hooks/catch/…" style="font-family:var(--mono);font-size:12px">
+        <div style="font-size:11px;color:var(--ink-3);margin-top:4px">We'll POST lead data as JSON to this URL on every new lead</div>
+      </div>
+    </div>
+
+    <!-- HubSpot fields -->
+    <div id="crm-fields-hubspot" style="display:none">
+      <div class="form-field">
+        <label class="form-label">HubSpot Private App Token</label>
+        <input class="form-input" id="crm-hubspot-token" placeholder="pat-na1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:var(--mono);font-size:12px">
+        <div style="font-size:11px;color:var(--ink-3);margin-top:4px">Create a Private App in HubSpot → Settings → Integrations → Private Apps</div>
+      </div>
+    </div>
+
+    <!-- Pipedrive fields -->
+    <div id="crm-fields-pipedrive" style="display:none">
+      <div class="form-field">
+        <label class="form-label">Pipedrive API Token</label>
+        <input class="form-input" id="crm-pipedrive-token" placeholder="Your Pipedrive API token" style="font-family:var(--mono);font-size:12px">
+      </div>
+    </div>
+
+    <div id="crm-test-result" style="display:none;padding:10px 12px;border-radius:7px;font-size:12px;margin-top:8px"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-add-crm').classList.remove('open')">Cancel</button>
+      <button class="btn btn-ghost" onclick="testIntegration()">Test Connection</button>
+      <button class="btn btn-primary" id="crm-save-btn" onclick="saveIntegration()">Save Integration</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  SUPABASE CONFIG — paste your new key on line below
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const SUPABASE_URL = 'https://shjyorirrhdqwjfxrdsa.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoanlvcmlycmhkcXdqZnhyZHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwOTE2MDcsImV4cCI6MjA4ODY2NzYwN30.okhlyiDDFCUd36Gl9ZQ2NgMPl_MA4rlMYXcDyNyjjwQ'
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// ── Helpers ───────────────────────────────────────
+function fmt(n) { return n == null ? '—' : Number(n).toLocaleString() }
+function fmtMoney(n) { return n == null ? '—' : '$' + Number(n).toLocaleString() }
+function timeAgo(ts) {
+  if (!ts) return '—'
+  const s = Math.floor((Date.now() - new Date(ts)) / 1000)
+  if (s < 60)   return s + 's ago'
+  if (s < 3600) return Math.floor(s/60) + ' min ago'
+  if (s < 86400)return Math.floor(s/3600) + ' hr ago'
+  return new Date(ts).toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+}
+function badge(status) {
+  const map = {
+    synced:   'badge-green',  pending: 'badge-amber',
+    failed:   'badge-red',    skipped: 'badge-grey',
+    new:      'badge-brand',  contacted:'badge-brand',
+    qualified:'badge-green',  converted:'badge-purple',
+    lost:     'badge-grey',   published:'badge-green',
+    draft:    'badge-amber',  archived: 'badge-grey',
+  }
+  const cls = map[(status||'').toLowerCase()] || 'badge-grey'
+  return `<span class="badge ${cls}"><span class="dot"></span>${status}</span>`
+}
+function showLoading(el, msg='Loading…') {
+  if (el) el.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--ink-3)">${msg}</td></tr>`
+}
+function showError(el, msg) {
+  if (el) el.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--red)">${msg}</td></tr>`
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  AUTH GATE — redirect to login if not signed in
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let currentUser = null
+
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession()
+  if (session) {
+    currentUser = session.user
+    document.getElementById('auth-gate').style.display = 'none'
+    document.getElementById('app-shell').style.display  = 'flex'
+    loadOverview()
+    loadUserMeta()
+  } else {
+    document.getElementById('auth-gate').style.display  = 'flex'
+    document.getElementById('app-shell').style.display  = 'none'
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim()
+  const pass  = document.getElementById('login-pass').value
+  const errEl = document.getElementById('login-error')
+  errEl.textContent = ''
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass })
+  if (error) { errEl.textContent = error.message; return }
+  initAuth()
+}
+
+async function doLogout() {
+  await sb.auth.signOut()
+  initAuth()
+}
+
+function loadUserMeta() {
+  if (!currentUser) return
+  const name = currentUser.user_metadata?.full_name || currentUser.email || 'User'
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)
+  document.querySelector('.user-name').textContent = name
+  document.querySelector('.avatar').textContent = initials
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  OVERVIEW PAGE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadOverview() {
+  try {
+    // Lead count
+    const { count: leadCount } = await sb.from('leads').select('*', { count:'exact', head:true })
+    document.getElementById('stat-leads').textContent = fmt(leadCount)
+
+    // Synced count
+    const { count: syncedCount } = await sb.from('leads')
+      .select('*', { count:'exact', head:true })
+      .eq('crm_status', 'synced')
+    document.getElementById('stat-synced').textContent = fmt(syncedCount)
+
+    // Estimator count (views via estimator_events)
+    const { count: viewCount } = await sb.from('estimator_events')
+      .select('*', { count:'exact', head:true })
+      .eq('event_type', 'view')
+    document.getElementById('stat-views').textContent = fmt(viewCount || 0)
+
+    // Conversion rate
+    const cvr = leadCount && viewCount ? ((leadCount / viewCount) * 100).toFixed(1) + '%' : '—'
+    document.getElementById('stat-cvr').textContent = cvr
+
+    // Recent leads table
+    const { data: recentLeads, error } = await sb.from('leads')
+      .select('lead_uid, full_name, email, estimator_id, estimate_result, crm_status, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    const tbody = document.getElementById('recent-leads-body')
+    if (error || !recentLeads?.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--ink-3)">No leads yet — submit your first test lead via the embed widget</td></tr>'
+      return
+    }
+    tbody.innerHTML = recentLeads.map(l => {
+      const val = l.estimate_result?.total || l.estimate_result?.value || null
+      return `<tr>
+        <td><div class="lead-email">${l.full_name || 'Anonymous'}</div>
+            <div style="font-size:11px;color:var(--ink-3)">${l.email || '—'}</div></td>
+        <td style="font-size:12px;color:var(--ink-3);font-family:var(--mono)">${l.estimator_id?.slice(0,8) || '—'}</td>
+        <td class="lead-value">${val ? fmtMoney(val) : '—'}</td>
+        <td>${badge(l.crm_status)}</td>
+        <td style="color:var(--ink-3);font-size:12px">${timeAgo(l.created_at)}</td>
+      </tr>`
+    }).join('')
+  } catch(e) {
+    console.error('Overview load error:', e)
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  ESTIMATORS PAGE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadEstimators() {
+  const grid = document.getElementById('estimators-grid')
+  if (!grid) return
+  grid.innerHTML = '<div style="color:var(--ink-3);font-size:13px;padding:20px">Loading estimators…</div>'
+
+  const { data, error } = await sb.from('estimators')
+    .select('id, name, slug, status, published_version_id, created_at')
+    .order('created_at', { ascending: false })
+
+  if (error || !data?.length) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">⊞</div><h3>No estimators yet</h3><p>Click "+ New Estimator" to create your first one</p></div>'
+    return
+  }
+
+  grid.innerHTML = data.map(e => `
+    <div class="estimator-card">
+      <div class="version-dot">${e.published_version_id ? 'v●' : 'draft'}</div>
+      <div style="margin-bottom:6px">${badge(e.status)}</div>
+      <div class="estimator-name">${e.name}</div>
+      <div class="estimator-slug">/embed/${e.slug}</div>
+      <div class="estimator-stats">
+        <div><div class="e-stat-label">Slug</div><div style="font-family:var(--mono);font-size:11px;color:var(--ink-3)">${e.slug}</div></div>
+      </div>
+      <div class="estimator-actions">
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='builder.html?id=${e.id}'">✎ Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick="copyEmbed('${e.slug}')">Copy Embed</button>
+        ${e.status !== 'published' ? `<button class="btn btn-ghost btn-sm" onclick="publishEstimator('${e.id}')">Publish</button>` : '<span class="badge badge-green" style="align-self:center">Published</span>'}
+      </div>
+    </div>
+  `).join('')
+}
+
+async function createEstimator() {
+  const name = document.getElementById('new-est-name').value.trim()
+  const slug = document.getElementById('new-est-slug').value.trim() ||
+               name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')
+  const desc = document.getElementById('new-est-desc').value.trim()
+  if (!name) { showToast('⚠ Name is required'); return }
+
+  // Get business_id for current user
+  const { data: membership } = await sb.from('memberships')
+    .select('business_id').eq('user_id', currentUser.id).limit(1).single()
+
+  if (!membership) { showToast('⚠ No business found for your account'); return }
+
+  const { error } = await sb.from('estimators').insert({
+    name, slug, description: desc,
+    business_id: membership.business_id,
+    created_by: currentUser.id,
+    status: 'draft'
+  })
+  if (error) { showToast('✗ ' + error.message); return }
+  document.getElementById('modal-new-estimator').classList.remove('open')
+  showToast('✓ Estimator created')
+  loadEstimators()
+}
+
+function copyEmbed(slug) {
+  const code = `<iframe src="${SUPABASE_URL.replace('supabase.co','yourapp.com')}/embed/${slug}" width="100%" height="520" frameborder="0"></iframe>`
+  navigator.clipboard?.writeText(code)
+  showToast('📋 Embed code copied')
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  LEADS PAGE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let leadsFilter = { status: null, crm_status: null }
+
+async function loadLeads() {
+  const tbody = document.getElementById('leads-table-body')
+  showLoading(tbody, 'Loading leads…')
+
+  let query = sb.from('leads')
+    .select('id, lead_uid, full_name, email, estimator_id, estimate_result, status, crm_status, crm_retry_count, created_at')
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (leadsFilter.status)     query = query.eq('status', leadsFilter.status)
+  if (leadsFilter.crm_status) query = query.eq('crm_status', leadsFilter.crm_status)
+
+  const { data, error } = await query
+
+  if (error) { showError(tbody, 'Failed to load leads: ' + error.message); return }
+  if (!data?.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--ink-3)">No leads found</td></tr>'
+    return
+  }
+
+  // Update total count
+  const countEl = document.getElementById('leads-count')
+  if (countEl) countEl.textContent = data.length + ' results'
+
+  tbody.innerHTML = data.map(l => {
+    const val = l.estimate_result?.total || l.estimate_result?.value || null
+    const retryInfo = l.crm_retry_count > 0 ? ` · retry ${l.crm_retry_count}/5` : ''
+    const crmBadge = `<span class="badge ${
+      l.crm_status==='synced' ? 'badge-green' :
+      l.crm_status==='failed' ? 'badge-red' : 'badge-amber'
+    }"><span class="dot"></span>${l.crm_status}${retryInfo}</span>`
+    return `<tr>
+      <td style="padding-left:20px">
+        <div class="lead-email">${l.full_name || 'Anonymous'}</div>
+        <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">${l.lead_uid || l.id?.slice(0,8)}</div>
+      </td>
+      <td style="font-size:12px;color:var(--ink-3)">${l.estimator_id?.slice(0,8) || '—'}</td>
+      <td class="lead-value">${val ? fmtMoney(val) : '—'}</td>
+      <td>${badge(l.status)}</td>
+      <td>${crmBadge}</td>
+      <td style="font-size:12px;color:var(--ink-3)">${timeAgo(l.created_at)}</td>
+      <td>${l.crm_status==='failed' ?
+        `<button class="btn btn-ghost btn-sm" onclick="retrySyncLead('${l.id}')">Sync Now</button>` :
+        `<button class="btn btn-ghost btn-sm" onclick="openLeadDetail('${l.id}')">View</button>`
+      }</td>
+    </tr>`
+  }).join('')
+}
+
+function setLeadsFilter(type, value, el) {
+  leadsFilter[type] = leadsFilter[type] === value ? null : value
+  el.closest('.filter-row').querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'))
+  if (leadsFilter[type]) el.classList.add('active')
+  loadLeads()
+}
+
+async function retrySyncLead(leadId) {
+  const { error } = await sb.from('leads').update({
+    crm_status: 'pending',
+    next_retry_at: new Date().toISOString()
+  }).eq('id', leadId)
+  if (error) { showToast('✗ ' + error.message); return }
+  showToast('↺ Sync triggered')
+  loadLeads()
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  LEAD DETAIL SLIDE-OVER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let currentLeadId = null
+let currentLeadNotes = []
+
+async function openLeadDetail(leadId) {
+  currentLeadId = leadId
+  currentLeadNotes = []
+
+  // Open panel immediately with loading state
+  document.getElementById('lead-slideover').classList.add('open')
+  document.getElementById('so-name').textContent    = 'Loading…'
+  document.getElementById('so-email').textContent   = ''
+  document.getElementById('so-answers').innerHTML   = '<div style="color:var(--ink-3);font-size:12px">Loading…</div>'
+  document.getElementById('so-timeline').innerHTML  = '<div style="color:var(--ink-3);font-size:12px;padding:8px 0">Loading events…</div>'
+
+  // Fetch full lead
+  const { data: lead, error } = await sb.from('leads')
+    .select('*')
+    .eq('id', leadId)
+    .single()
+
+  if (error || !lead) { showToast('✗ Could not load lead'); return }
+
+  // Populate header
+  document.getElementById('so-name').textContent  = lead.full_name || 'Anonymous'
+  document.getElementById('so-email').textContent = lead.email    || '—'
+  document.getElementById('so-status-badge').innerHTML = `<span class="badge ${statusBadgeClass(lead.status)}">${lead.status || 'new'}</span>`
+
+  // Estimate
+  const val = lead.estimate_result?.total || lead.estimate_result?.value || null
+  const low = lead.estimate_result?.low   || null
+  const high= lead.estimate_result?.high  || null
+  document.getElementById('so-estimate').textContent = val  ? fmtMoney(val) : '—'
+  document.getElementById('so-range').textContent    = (low && high) ? fmtMoney(low) + ' – ' + fmtMoney(high) : '—'
+  document.getElementById('so-lead-uid').textContent = lead.lead_uid  || lead.id?.slice(0,12)
+  document.getElementById('so-submitted').textContent= lead.created_at ? new Date(lead.created_at).toLocaleString() : '—'
+  document.getElementById('so-phone').textContent    = lead.phone || '—'
+
+  // CRM badge
+  const crmClass = lead.crm_status === 'synced' ? 'badge-green' : lead.crm_status === 'failed' ? 'badge-red' : 'badge-amber'
+  document.getElementById('so-crm').innerHTML = `<span class="badge ${crmClass}">${lead.crm_status || 'pending'}</span>${lead.crm_retry_count > 0 ? ' <span style="font-size:11px;color:var(--ink-3)">retry ' + lead.crm_retry_count + '/5</span>' : ''}`
+
+  // Status select
+  document.getElementById('so-status-select').value = lead.status || 'new'
+
+  // Answers
+  const answersEl = document.getElementById('so-answers')
+  if (lead.answers && Object.keys(lead.answers).length) {
+    answersEl.innerHTML = Object.entries(lead.answers).map(([k, v]) => `
+      <div class="so-answer-row">
+        <span class="so-answer-key">${k.replace(/_/g,' ')}</span>
+        <span class="so-answer-val">${v}</span>
+      </div>`).join('')
+  } else {
+    answersEl.innerHTML = '<div style="color:var(--ink-3);font-size:12px">No answers recorded</div>'
+  }
+
+  // Notes
+  currentLeadNotes = lead.notes ? (typeof lead.notes === 'string' ? JSON.parse(lead.notes) : lead.notes) : []
+  if (!Array.isArray(currentLeadNotes)) currentLeadNotes = []
+  renderNotes()
+
+  // Load event timeline
+  loadLeadTimeline(lead.visitor_session_id)
+}
+
+function renderNotes() {
+  const el = document.getElementById('so-notes-history')
+  if (!currentLeadNotes.length) {
+    el.innerHTML = '<div style="color:var(--ink-3);font-size:12px;padding:4px 0">No notes yet</div>'
+    return
+  }
+  el.innerHTML = currentLeadNotes.slice().reverse().map(n => `
+    <div class="so-note">
+      <div class="so-note-meta">${new Date(n.at).toLocaleString()}</div>
+      <div class="so-note-text">${n.text}</div>
+    </div>`).join('')
+}
+
+async function loadLeadTimeline(sessionId) {
+  const el = document.getElementById('so-timeline')
+  if (!sessionId) { el.innerHTML = '<div style="color:var(--ink-3);font-size:12px;padding:8px 0">No session data</div>'; return }
+
+  const { data: events } = await sb.from('estimator_events')
+    .select('event_type, step_key, occurred_at, payload')
+    .eq('visitor_session_id', sessionId)
+    .order('occurred_at', { ascending: true })
+
+  if (!events?.length) {
+    el.innerHTML = '<div style="color:var(--ink-3);font-size:12px;padding:8px 0">No events recorded</div>'
+    return
+  }
+
+  const eventColors = {
+    view: '#60a5fa', step_start: '#a78bfa', step_complete: '#34d399',
+    step_back: '#fbbf24', result_view: '#f472b6', lead_submit: '#10b981'
+  }
+
+  el.innerHTML = events.map(e => `
+    <div class="so-event">
+      <div class="so-event-dot" style="background:${eventColors[e.event_type] || '#94a3b8'}"></div>
+      <div>
+        <div class="so-event-type">${e.event_type}${e.step_key ? ' · ' + e.step_key : ''}</div>
+        <div class="so-event-time">${new Date(e.occurred_at).toLocaleString()}</div>
+      </div>
+    </div>`).join('')
+}
+
+async function updateLeadStatus(newStatus) {
+  if (!currentLeadId) return
+  const { error } = await sb.from('leads')
+    .update({ status: newStatus })
+    .eq('id', currentLeadId)
+  if (error) { showToast('✗ ' + error.message); return }
+
+  // Update badge in slideover header
+  document.getElementById('so-status-badge').innerHTML = `<span class="badge ${statusBadgeClass(newStatus)}">${newStatus}</span>`
+  showToast('✓ Status updated to ' + newStatus)
+  loadLeads()
+}
+
+async function addLeadNote() {
+  const input = document.getElementById('so-note-input')
+  const text  = input.value.trim()
+  if (!text) return
+
+  currentLeadNotes.push({ text, at: new Date().toISOString() })
+
+  const { error } = await sb.from('leads')
+    .update({ notes: JSON.stringify(currentLeadNotes) })
+    .eq('id', currentLeadId)
+
+  if (error) { showToast('✗ ' + error.message); currentLeadNotes.pop(); return }
+
+  input.value = ''
+  renderNotes()
+  showToast('✓ Note added')
+}
+
+async function saveLeadChanges() {
+  // Status is already saved on change — just close and refresh
+  showToast('✓ Changes saved')
+  document.getElementById('lead-slideover').classList.remove('open')
+  loadLeads()
+}
+
+async function syncLeadFromSlideover() {
+  if (!currentLeadId) return
+  const { error } = await sb.from('leads').update({
+    crm_status:    'pending',
+    next_retry_at: new Date().toISOString()
+  }).eq('id', currentLeadId)
+  if (error) { showToast('✗ ' + error.message); return }
+  showToast('↺ CRM sync triggered')
+  // Reload lead detail
+  openLeadDetail(currentLeadId)
+}
+
+function closeSlideover(e) {
+  if (e.target === document.getElementById('lead-slideover'))
+    document.getElementById('lead-slideover').classList.remove('open')
+}
+
+function statusBadgeClass(status) {
+  return status === 'converted' ? 'badge-green' :
+         status === 'qualified' ? 'badge-brand' :
+         status === 'lost'      ? 'badge-red'   : 'badge-amber'
+}
+
+async function exportLeadsCSV() {
+  const { data } = await sb.from('leads')
+    .select('lead_uid,full_name,email,phone,company,status,crm_status,created_at')
+    .order('created_at', { ascending: false })
+  if (!data?.length) { showToast('No leads to export'); return }
+  const headers = Object.keys(data[0]).join(',')
+  const rows = data.map(r => Object.values(r).map(v => `"${v||''}"`).join(','))
+  const csv = [headers, ...rows].join('\n')
+  const a = document.createElement('a')
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+  a.download = 'leads.csv'
+  a.click()
+  showToast('⬇ CSV downloaded')
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  ANALYTICS PAGE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadAnalytics() {
+  try {
+    const { count: views }   = await sb.from('estimator_events').select('*',{count:'exact',head:true}).eq('event_type','view')
+    const { count: submits } = await sb.from('estimator_events').select('*',{count:'exact',head:true}).eq('event_type','lead_submit')
+    const { count: leads }   = await sb.from('leads').select('*',{count:'exact',head:true})
+
+    const el = id => document.getElementById(id)
+    if (el('ana-views'))   el('ana-views').textContent   = fmt(views)
+    if (el('ana-submits')) el('ana-submits').textContent = fmt(submits)
+    if (el('ana-leads'))   el('ana-leads').textContent   = fmt(leads)
+
+    // Event type breakdown
+    const { data: eventBreakdown } = await sb.from('estimator_events')
+      .select('event_type')
+      .limit(1000)
+
+    if (eventBreakdown) {
+      const counts = {}
+      eventBreakdown.forEach(e => counts[e.event_type] = (counts[e.event_type]||0)+1)
+      const breakdownEl = document.getElementById('event-breakdown')
+      if (breakdownEl) {
+        const total = Object.values(counts).reduce((a,b)=>a+b,0)
+        breakdownEl.innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([type,count]) => `
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+              <span>${type}</span><span style="font-family:var(--mono);font-weight:600">${fmt(count)}</span>
+            </div>
+            <div style="background:var(--surface);border-radius:3px;height:5px">
+              <div style="width:${Math.round(count/total*100)}%;height:5px;border-radius:3px;background:var(--brand)"></div>
+            </div>
+          </div>
+        `).join('')
+      }
+    }
+  } catch(e) { console.error('Analytics error:', e) }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  CRM / RETRY QUEUE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  CRM INTEGRATIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let editingIntegrationId = null
+
+async function loadIntegrations() {
+  const tbody = document.getElementById('integrations-table-body')
+  if (!tbody) return
+  if (!businessId) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-3)">No business found</td></tr>'; return }
+
+  const { data, error } = await sb.from('integrations')
+    .select('*')
+    .eq('business_id', businessId)
+    .order('created_at', { ascending: false })
+
+  if (error || !data?.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--ink-3)">
+      <div style="font-size:20px;margin-bottom:8px">⚡</div>
+      <div style="font-weight:600;margin-bottom:4px">No integrations yet</div>
+      <div style="font-size:12px">Add a webhook or CRM to automatically push leads</div>
+    </td></tr>`
+    return
+  }
+
+  tbody.innerHTML = data.map(i => {
+    const typeColors = { hubspot: 'badge-orange', zapier: 'badge-brand', webhook: 'badge-purple', pipedrive: 'badge-green' }
+    const statusBadge = i.status === 'active'
+      ? '<span class="badge badge-green"><span class="dot"></span>Active</span>'
+      : '<span class="badge badge-amber"><span class="dot"></span>Inactive</span>'
+    return `<tr>
+      <td style="padding-left:20px"><strong>${i.name || i.type}</strong></td>
+      <td><span class="badge ${typeColors[i.type] || 'badge-brand'}">${i.type}</span></td>
+      <td>${statusBadge}</td>
+      <td style="font-size:12px;color:var(--ink-3)">${i.last_synced_at ? timeAgo(i.last_synced_at) : 'Never'}</td>
+      <td><span style="font-family:var(--mono);color:${i.error_count > 0 ? 'var(--red)' : 'var(--ink-3)'};font-weight:${i.error_count > 0 ? 600 : 400}">${i.error_count}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="editIntegration('${i.id}')">Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick="testExistingIntegration('${i.id}')">Test</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteIntegration('${i.id}')">Remove</button>
+      </td>
+    </tr>`
+  }).join('')
+}
+
+function openAddIntegrationModal() {
+  editingIntegrationId = null
+  document.getElementById('crm-modal-title').textContent = 'Add Integration'
+  document.getElementById('crm-name').value = ''
+  document.getElementById('crm-type').value = 'webhook'
+  document.getElementById('crm-webhook-url').value = ''
+  document.getElementById('crm-hubspot-token').value = ''
+  document.getElementById('crm-pipedrive-token').value = ''
+  document.getElementById('crm-test-result').style.display = 'none'
+  updateCRMFields()
+  openModal('add-crm')
+}
+
+async function editIntegration(id) {
+  const { data } = await sb.from('integrations').select('*').eq('id', id).single()
+  if (!data) return
+  editingIntegrationId = id
+  document.getElementById('crm-modal-title').textContent = 'Edit Integration'
+  document.getElementById('crm-name').value = data.name || ''
+  document.getElementById('crm-type').value = data.type
+  document.getElementById('crm-webhook-url').value   = data.config?.webhook_url || ''
+  document.getElementById('crm-hubspot-token').value = data.config?.api_key     || ''
+  document.getElementById('crm-pipedrive-token').value = data.config?.api_key   || ''
+  document.getElementById('crm-test-result').style.display = 'none'
+  updateCRMFields()
+  openModal('add-crm')
+}
+
+function updateCRMFields() {
+  const type = document.getElementById('crm-type').value
+  document.getElementById('crm-fields-webhook').style.display  = (type === 'webhook' || type === 'zapier') ? 'block' : 'none'
+  document.getElementById('crm-fields-hubspot').style.display  = type === 'hubspot'   ? 'block' : 'none'
+  document.getElementById('crm-fields-pipedrive').style.display = type === 'pipedrive' ? 'block' : 'none'
+}
+
+function buildIntegrationConfig() {
+  const type = document.getElementById('crm-type').value
+  if (type === 'webhook' || type === 'zapier') {
+    return { webhook_url: document.getElementById('crm-webhook-url').value.trim() }
+  } else if (type === 'hubspot') {
+    return { api_key: document.getElementById('crm-hubspot-token').value.trim() }
+  } else if (type === 'pipedrive') {
+    return { api_key: document.getElementById('crm-pipedrive-token').value.trim() }
+  }
+  return {}
+}
+
+async function saveIntegration() {
+  const name   = document.getElementById('crm-name').value.trim()
+  const type   = document.getElementById('crm-type').value
+  const config = buildIntegrationConfig()
+
+  if (!name)   { showToast('⚠ Please enter a name'); return }
+  if (type === 'webhook' || type === 'zapier') {
+    if (!config.webhook_url) { showToast('⚠ Please enter a webhook URL'); return }
+  } else if (!config.api_key) {
+    showToast('⚠ Please enter an API key'); return
+  }
+
+  const btn = document.getElementById('crm-save-btn')
+  btn.textContent = 'Saving…'
+  btn.disabled = true
+
+  try {
+    if (editingIntegrationId) {
+      const { error } = await sb.from('integrations').update({ name, type, config }).eq('id', editingIntegrationId)
+      if (error) throw error
+      showToast('✓ Integration updated')
+    } else {
+      const { error } = await sb.from('integrations').insert({ name, type, config, business_id: businessId, status: 'active' })
+      if (error) throw error
+      showToast('✓ Integration connected')
+    }
+    document.getElementById('modal-add-crm').classList.remove('open')
+    loadIntegrations()
+  } catch(e) {
+    showToast('✗ ' + e.message)
+  }
+  btn.textContent = 'Save Integration'
+  btn.disabled = false
+}
+
+async function deleteIntegration(id) {
+  if (!confirm('Remove this integration? Leads will no longer sync to it.')) return
+  const { error } = await sb.from('integrations').delete().eq('id', id)
+  if (error) { showToast('✗ ' + error.message); return }
+  showToast('✓ Integration removed')
+  loadIntegrations()
+}
+
+async function testIntegration() {
+  const type   = document.getElementById('crm-type').value
+  const config = buildIntegrationConfig()
+  const result = document.getElementById('crm-test-result')
+  result.style.display = 'block'
+  result.style.background = 'var(--surface)'
+  result.style.color = 'var(--ink-3)'
+  result.textContent = 'Sending test ping…'
+
+  const testPayload = {
+    lead_uid: 'lead_test_' + Date.now().toString(36),
+    full_name: 'Test Lead',
+    email: 'test@example.com',
+    phone: '555-0000',
+    estimate: 5000,
+    answers: { property_type: 'single_family', condition: 'good' },
+    submitted_at: new Date().toISOString(),
+    test: true
+  }
+
+  try {
+    const res = await sendWebhook(config.webhook_url || '', testPayload)
+    if (res.ok) {
+      result.style.background = 'var(--green-dim)'
+      result.style.color = 'var(--green)'
+      result.textContent = '✓ Connection successful — webhook received the test payload'
+    } else {
+      result.style.background = 'var(--red-dim)'
+      result.style.color = 'var(--red)'
+      result.textContent = '✗ Webhook returned ' + res.status + ' — check your URL'
+    }
+  } catch(e) {
+    result.style.background = 'var(--red-dim)'
+    result.style.color = 'var(--red)'
+    result.textContent = '✗ Connection failed: ' + e.message
+  }
+}
+
+async function testExistingIntegration(id) {
+  const { data } = await sb.from('integrations').select('*').eq('id', id).single()
+  if (!data) return
+  showToast('↺ Sending test ping…')
+  const testPayload = {
+    lead_uid: 'lead_test_' + Date.now().toString(36),
+    full_name: 'Test Lead', email: 'test@example.com',
+    estimate: 5000, answers: {}, submitted_at: new Date().toISOString(), test: true
+  }
+  try {
+    if (data.type === 'webhook' || data.type === 'zapier') {
+      await sendWebhook(data.config.webhook_url, testPayload)
+    }
+    await sb.from('integrations').update({ last_synced_at: new Date().toISOString() }).eq('id', id)
+    showToast('✓ Test ping sent successfully')
+    loadIntegrations()
+  } catch(e) {
+    showToast('✗ Test failed: ' + e.message)
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  SYNC WORKER — fires when a lead is submitted
+//  Call this after a lead is created in the embed
+//  (or trigger manually from dashboard)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function syncLeadToCRM(leadId) {
+  if (!businessId) return
+
+  // Get integrations for this business
+  const { data: integrations } = await sb.from('integrations')
+    .select('*')
+    .eq('business_id', businessId)
+    .eq('status', 'active')
+
+  if (!integrations?.length) return
+
+  // Get lead data
+  const { data: lead } = await sb.from('leads').select('*').eq('id', leadId).single()
+  if (!lead) return
+
+  const payload = {
+    lead_uid:     lead.lead_uid,
+    full_name:    lead.full_name,
+    email:        lead.email,
+    phone:        lead.phone || '',
+    estimate:     lead.estimate_result?.total || 0,
+    answers:      lead.answers || {},
+    submitted_at: lead.created_at,
+  }
+
+  let allSuccess = true
+
+  for (const integration of integrations) {
+    try {
+      if (integration.type === 'webhook' || integration.type === 'zapier') {
+        const res = await sendWebhook(integration.config.webhook_url, payload)
+        if (!res.ok) throw new Error('HTTP ' + res.status)
+      } else if (integration.type === 'hubspot') {
+        await syncToHubSpot(integration.config.api_key, lead)
+      }
+
+      // Mark success
+      await sb.from('integrations').update({
+        last_synced_at: new Date().toISOString(),
+        error_count: 0
+      }).eq('id', integration.id)
+
+    } catch(e) {
+      allSuccess = false
+      await sb.from('integrations').update({
+        error_count: (integration.error_count || 0) + 1
+      }).eq('id', integration.id)
+
+      // Mark lead as failed with retry schedule
+      const retryCount = (lead.crm_retry_count || 0) + 1
+      const delayMs = [5,30,120,720,1440][Math.min(retryCount-1, 4)] * 60 * 1000
+      await sb.from('leads').update({
+        crm_status:      'failed',
+        crm_error:       e.message,
+        crm_retry_count: retryCount,
+        next_retry_at:   new Date(Date.now() + delayMs).toISOString()
+      }).eq('id', leadId)
+      return
+    }
+  }
+
+  if (allSuccess) {
+    await sb.from('leads').update({
+      crm_status:    'synced',
+      crm_synced_at: new Date().toISOString(),
+      crm_error:     null
+    }).eq('id', leadId)
+  }
+}
+
+async function sendWebhook(url, payload) {
+  return await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+}
+
+async function syncToHubSpot(apiKey, lead) {
+  const res = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify({
+      properties: {
+        email:     lead.email,
+        firstname: lead.full_name?.split(' ')?.[0] || '',
+        lastname:  lead.full_name?.split(' ')?.slice(1).join(' ') || '',
+        phone:     lead.phone || '',
+        hs_lead_status: 'NEW'
+      }
+    })
+  })
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.message || 'HubSpot error ' + res.status)
+  }
+  return res
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  RETRY QUEUE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadRetryQueue() {
+  const { data, error } = await sb.from('leads')
+    .select('id, lead_uid, full_name, estimator_id, crm_status, crm_error, crm_retry_count, next_retry_at')
+    .eq('crm_status', 'failed')
+    .order('next_retry_at', { ascending: true })
+    .limit(20)
+
+  const container = document.getElementById('retry-queue')
+  if (!container) return
+
+  if (error || !data?.length) {
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);font-size:13px">✓ No failed syncs — retry queue is clear</div>'
+    const badge = document.querySelector('.nav-badge')
+    if (badge) badge.style.display = 'none'
+    return
+  }
+
+  const navBadge = document.querySelector('.nav-badge')
+  if (navBadge) navBadge.textContent = data.length
+
+  container.innerHTML = data.map(l => `
+    <div style="padding:12px;background:var(--red-dim);border-radius:8px;border:1px solid #fecaca;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink)">${l.lead_uid || l.id?.slice(0,10)}</span>
+        <span class="badge badge-red">retry ${l.crm_retry_count}/5</span>
+      </div>
+      <div style="font-size:12px;color:var(--ink-3)">${l.full_name || 'Anonymous'}</div>
+      <div style="font-size:11px;color:var(--red);margin-top:4px">Error: ${l.crm_error || 'Unknown error'}</div>
+      <div style="font-size:11px;color:var(--ink-3);margin-top:2px">Next retry: ${timeAgo(l.next_retry_at)}</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="retrySyncLead('${l.id}')">Sync Now</button>
+    </div>
+  `).join('')
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  SETTINGS PAGE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadSettings() {
+  const { data: membership } = await sb.from('memberships')
+    .select('business_id, role, businesses(id, name, slug, plan, domain_allowlist)')
+    .eq('user_id', currentUser.id).limit(1).single()
+
+  if (!membership?.businesses) return
+  const biz = membership.businesses
+
+  const nameEl = document.getElementById('settings-biz-name')
+  const slugEl = document.getElementById('settings-biz-slug')
+  const planEl = document.getElementById('settings-biz-plan')
+  if (nameEl) nameEl.value = biz.name || ''
+  if (slugEl) slugEl.value = biz.slug || ''
+  if (planEl) planEl.value = biz.plan || 'free'
+
+  loadTeamMembers(biz.id)
+}
+
+async function loadTeamMembers(businessId) {
+  const { data } = await sb.from('memberships')
+    .select('role, users(id, email, full_name)')
+    .eq('business_id', businessId)
+
+  const tbody = document.getElementById('team-table-body')
+  if (!tbody || !data?.length) return
+  tbody.innerHTML = data.map(m => `
+    <tr>
+      <td><div style="font-weight:500">${m.users?.full_name || m.users?.email || '—'}</div>
+          <div style="font-size:11px;color:var(--ink-3)">${m.users?.email || ''}</div></td>
+      <td>${badge(m.role)}</td>
+      <td>${m.role !== 'owner' ? '<button class="btn btn-ghost btn-sm">Edit</button>' : ''}</td>
+    </tr>
+  `).join('')
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  NAVIGATION
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const pageLoaders = {
+  overview:   loadOverview,
+  estimators: loadEstimators,
+  leads:      loadLeads,
+  analytics:  loadAnalytics,
+  crm:        async () => { await loadIntegrations(); await loadRetryQueue(); },
+  settings:   loadSettings,
+}
+
+function navigate(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+  const page = document.getElementById('page-' + id)
+  if (page) page.classList.add('active')
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes("'" + id + "'"))
+      n.classList.add('active')
+  })
+  if (pageLoaders[id]) pageLoaders[id]()
+}
+
+// ── Filter chips ──────────────────────────────
+function filterChip(el) {
+  el.closest('.filter-row').querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'))
+  el.classList.add('active')
+}
+
+// ── Modals ────────────────────────────────────
+function openModal(id) {
+  document.getElementById('modal-' + id).classList.add('open')
+}
+function closeModal(e) {
+  if (e.target.classList.contains('modal-overlay'))
+    e.target.classList.remove('open')
+}
+
+// ── Toast ─────────────────────────────────────
+let toastTimer
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.classList.add('show')
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800)
+}
+
+// ── Boot ──────────────────────────────────────
+window.addEventListener('DOMContentLoaded', initAuth)
+</script>
+
+</div><!-- /app-shell -->
+</body>
+</html>
