@@ -681,7 +681,7 @@
           <option>Last 7 days</option>
           <option>This month</option>
         </select>
-        <button class="btn btn-primary btn-sm" onclick="window.location.href='builder.html'">+ New Estimator</button>
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='wizard.html'">+ New Estimator</button>
       </div>
     </div>
 
@@ -837,7 +837,7 @@
       <div class="topbar-actions">
         <input class="search-input" placeholder="Search estimators…">
         <button class="btn btn-ghost btn-sm" onclick="openModal('new-estimator')">+ Quick Create</button>
-        <button class="btn btn-primary btn-sm" onclick="window.location.href='builder.html'">⊞ Build Estimator</button>
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='wizard.html'">⊞ Build Estimator</button>
       </div>
     </div>
 
@@ -1222,7 +1222,7 @@
     <div class="topbar">
       <div class="topbar-title">CRM & Webhooks</div>
       <div class="topbar-actions">
-        <button class="btn btn-primary btn-sm" onclick="openModal('add-crm')">+ Add Integration</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddIntegrationModal()">+ Add Integration</button>
       </div>
     </div>
 
@@ -1230,27 +1230,15 @@
 
       <!-- Active integrations -->
       <div class="card">
-        <div class="card-header"><div class="card-title">Active Integrations</div></div>
+        <div class="card-header">
+          <div class="card-title">Active Integrations</div>
+          <button class="btn btn-ghost btn-sm" onclick="loadIntegrations()">↺ Refresh</button>
+        </div>
         <div class="card-body" style="padding-top:12px">
           <table class="data-table">
-            <thead><tr><th>Integration</th><th>Type</th><th>Status</th><th>Last Sync</th><th>Errors</th><th></th></tr></thead>
-            <tbody>
-              <tr>
-                <td><strong>HubSpot CRM</strong></td>
-                <td><span class="badge badge-purple">hubspot</span></td>
-                <td><span class="badge badge-green"><span class="dot"></span>Connected</span></td>
-                <td style="font-size:12px;color:var(--ink-3)">2 min ago</td>
-                <td><span style="font-family:var(--mono);color:var(--ink-3)">0</span></td>
-                <td><button class="btn btn-ghost btn-sm">Configure</button></td>
-              </tr>
-              <tr>
-                <td><strong>Zapier Webhook</strong></td>
-                <td><span class="badge badge-brand">webhook</span></td>
-                <td><span class="badge badge-amber"><span class="dot"></span>Degraded</span></td>
-                <td style="font-size:12px;color:var(--ink-3)">14 min ago</td>
-                <td><span style="font-family:var(--mono);color:var(--red);font-weight:600">3</span></td>
-                <td><button class="btn btn-ghost btn-sm">Configure</button></td>
-              </tr>
+            <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Last Sync</th><th>Errors</th><th></th></tr></thead>
+            <tbody id="integrations-table-body">
+              <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-3)">Loading integrations…</td></tr>
             </tbody>
           </table>
         </div>
@@ -1521,16 +1509,56 @@
 </div>
 
 <div class="modal-overlay" id="modal-add-crm" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-title">Add CRM Integration</div>
-    <div class="modal-sub">Connect your leads to an external CRM or webhook endpoint</div>
-    <div class="form-field"><label class="form-label">Integration Type</label>
-      <select class="form-input"><option>HubSpot</option><option>Salesforce</option><option>Pipedrive</option><option>Webhook (Custom)</option><option>Zapier</option></select>
+  <div class="modal" style="max-width:500px">
+    <div class="modal-title" id="crm-modal-title">Add Integration</div>
+    <div class="modal-sub">Connect your leads to an external CRM or webhook</div>
+
+    <div class="form-field">
+      <label class="form-label">Integration Name</label>
+      <input class="form-input" id="crm-name" placeholder="e.g. My HubSpot, Zapier Catch">
     </div>
-    <div class="form-field"><label class="form-label">API Key / Webhook URL</label><input class="form-input" placeholder="https://hooks.zapier.com/hooks/catch/…" style="font-family:var(--mono)"></div>
+    <div class="form-field">
+      <label class="form-label">Type</label>
+      <select class="form-input" id="crm-type" onchange="updateCRMFields()">
+        <option value="webhook">Webhook (Custom URL)</option>
+        <option value="zapier">Zapier</option>
+        <option value="hubspot">HubSpot</option>
+        <option value="pipedrive">Pipedrive</option>
+      </select>
+    </div>
+
+    <!-- Webhook / Zapier fields -->
+    <div id="crm-fields-webhook">
+      <div class="form-field">
+        <label class="form-label">Webhook URL</label>
+        <input class="form-input" id="crm-webhook-url" placeholder="https://hooks.zapier.com/hooks/catch/…" style="font-family:var(--mono);font-size:12px">
+        <div style="font-size:11px;color:var(--ink-3);margin-top:4px">We'll POST lead data as JSON to this URL on every new lead</div>
+      </div>
+    </div>
+
+    <!-- HubSpot fields -->
+    <div id="crm-fields-hubspot" style="display:none">
+      <div class="form-field">
+        <label class="form-label">HubSpot Private App Token</label>
+        <input class="form-input" id="crm-hubspot-token" placeholder="pat-na1-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:var(--mono);font-size:12px">
+        <div style="font-size:11px;color:var(--ink-3);margin-top:4px">Create a Private App in HubSpot → Settings → Integrations → Private Apps</div>
+      </div>
+    </div>
+
+    <!-- Pipedrive fields -->
+    <div id="crm-fields-pipedrive" style="display:none">
+      <div class="form-field">
+        <label class="form-label">Pipedrive API Token</label>
+        <input class="form-input" id="crm-pipedrive-token" placeholder="Your Pipedrive API token" style="font-family:var(--mono);font-size:12px">
+      </div>
+    </div>
+
+    <div id="crm-test-result" style="display:none;padding:10px 12px;border-radius:7px;font-size:12px;margin-top:8px"></div>
+
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="document.getElementById('modal-add-crm').classList.remove('open')">Cancel</button>
-      <button class="btn btn-primary" onclick="document.getElementById('modal-add-crm').classList.remove('open');showToast('✓ Integration connected')">Connect</button>
+      <button class="btn btn-ghost" onclick="testIntegration()">Test Connection</button>
+      <button class="btn btn-primary" id="crm-save-btn" onclick="saveIntegration()">Save Integration</button>
     </div>
   </div>
 </div>
@@ -2041,6 +2069,309 @@ async function loadAnalytics() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  CRM / RETRY QUEUE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  CRM INTEGRATIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let editingIntegrationId = null
+
+async function loadIntegrations() {
+  const tbody = document.getElementById('integrations-table-body')
+  if (!tbody) return
+  if (!businessId) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-3)">No business found</td></tr>'; return }
+
+  const { data, error } = await sb.from('integrations')
+    .select('*')
+    .eq('business_id', businessId)
+    .order('created_at', { ascending: false })
+
+  if (error || !data?.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--ink-3)">
+      <div style="font-size:20px;margin-bottom:8px">⚡</div>
+      <div style="font-weight:600;margin-bottom:4px">No integrations yet</div>
+      <div style="font-size:12px">Add a webhook or CRM to automatically push leads</div>
+    </td></tr>`
+    return
+  }
+
+  tbody.innerHTML = data.map(i => {
+    const typeColors = { hubspot: 'badge-orange', zapier: 'badge-brand', webhook: 'badge-purple', pipedrive: 'badge-green' }
+    const statusBadge = i.status === 'active'
+      ? '<span class="badge badge-green"><span class="dot"></span>Active</span>'
+      : '<span class="badge badge-amber"><span class="dot"></span>Inactive</span>'
+    return `<tr>
+      <td style="padding-left:20px"><strong>${i.name || i.type}</strong></td>
+      <td><span class="badge ${typeColors[i.type] || 'badge-brand'}">${i.type}</span></td>
+      <td>${statusBadge}</td>
+      <td style="font-size:12px;color:var(--ink-3)">${i.last_synced_at ? timeAgo(i.last_synced_at) : 'Never'}</td>
+      <td><span style="font-family:var(--mono);color:${i.error_count > 0 ? 'var(--red)' : 'var(--ink-3)'};font-weight:${i.error_count > 0 ? 600 : 400}">${i.error_count}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="editIntegration('${i.id}')">Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick="testExistingIntegration('${i.id}')">Test</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteIntegration('${i.id}')">Remove</button>
+      </td>
+    </tr>`
+  }).join('')
+}
+
+function openAddIntegrationModal() {
+  editingIntegrationId = null
+  document.getElementById('crm-modal-title').textContent = 'Add Integration'
+  document.getElementById('crm-name').value = ''
+  document.getElementById('crm-type').value = 'webhook'
+  document.getElementById('crm-webhook-url').value = ''
+  document.getElementById('crm-hubspot-token').value = ''
+  document.getElementById('crm-pipedrive-token').value = ''
+  document.getElementById('crm-test-result').style.display = 'none'
+  updateCRMFields()
+  openModal('add-crm')
+}
+
+async function editIntegration(id) {
+  const { data } = await sb.from('integrations').select('*').eq('id', id).single()
+  if (!data) return
+  editingIntegrationId = id
+  document.getElementById('crm-modal-title').textContent = 'Edit Integration'
+  document.getElementById('crm-name').value = data.name || ''
+  document.getElementById('crm-type').value = data.type
+  document.getElementById('crm-webhook-url').value   = data.config?.webhook_url || ''
+  document.getElementById('crm-hubspot-token').value = data.config?.api_key     || ''
+  document.getElementById('crm-pipedrive-token').value = data.config?.api_key   || ''
+  document.getElementById('crm-test-result').style.display = 'none'
+  updateCRMFields()
+  openModal('add-crm')
+}
+
+function updateCRMFields() {
+  const type = document.getElementById('crm-type').value
+  document.getElementById('crm-fields-webhook').style.display  = (type === 'webhook' || type === 'zapier') ? 'block' : 'none'
+  document.getElementById('crm-fields-hubspot').style.display  = type === 'hubspot'   ? 'block' : 'none'
+  document.getElementById('crm-fields-pipedrive').style.display = type === 'pipedrive' ? 'block' : 'none'
+}
+
+function buildIntegrationConfig() {
+  const type = document.getElementById('crm-type').value
+  if (type === 'webhook' || type === 'zapier') {
+    return { webhook_url: document.getElementById('crm-webhook-url').value.trim() }
+  } else if (type === 'hubspot') {
+    return { api_key: document.getElementById('crm-hubspot-token').value.trim() }
+  } else if (type === 'pipedrive') {
+    return { api_key: document.getElementById('crm-pipedrive-token').value.trim() }
+  }
+  return {}
+}
+
+async function saveIntegration() {
+  const name   = document.getElementById('crm-name').value.trim()
+  const type   = document.getElementById('crm-type').value
+  const config = buildIntegrationConfig()
+
+  if (!name)   { showToast('⚠ Please enter a name'); return }
+  if (type === 'webhook' || type === 'zapier') {
+    if (!config.webhook_url) { showToast('⚠ Please enter a webhook URL'); return }
+  } else if (!config.api_key) {
+    showToast('⚠ Please enter an API key'); return
+  }
+
+  const btn = document.getElementById('crm-save-btn')
+  btn.textContent = 'Saving…'
+  btn.disabled = true
+
+  try {
+    if (editingIntegrationId) {
+      const { error } = await sb.from('integrations').update({ name, type, config }).eq('id', editingIntegrationId)
+      if (error) throw error
+      showToast('✓ Integration updated')
+    } else {
+      const { error } = await sb.from('integrations').insert({ name, type, config, business_id: businessId, status: 'active' })
+      if (error) throw error
+      showToast('✓ Integration connected')
+    }
+    document.getElementById('modal-add-crm').classList.remove('open')
+    loadIntegrations()
+  } catch(e) {
+    showToast('✗ ' + e.message)
+  }
+  btn.textContent = 'Save Integration'
+  btn.disabled = false
+}
+
+async function deleteIntegration(id) {
+  if (!confirm('Remove this integration? Leads will no longer sync to it.')) return
+  const { error } = await sb.from('integrations').delete().eq('id', id)
+  if (error) { showToast('✗ ' + error.message); return }
+  showToast('✓ Integration removed')
+  loadIntegrations()
+}
+
+async function testIntegration() {
+  const type   = document.getElementById('crm-type').value
+  const config = buildIntegrationConfig()
+  const result = document.getElementById('crm-test-result')
+  result.style.display = 'block'
+  result.style.background = 'var(--surface)'
+  result.style.color = 'var(--ink-3)'
+  result.textContent = 'Sending test ping…'
+
+  const testPayload = {
+    lead_uid: 'lead_test_' + Date.now().toString(36),
+    full_name: 'Test Lead',
+    email: 'test@example.com',
+    phone: '555-0000',
+    estimate: 5000,
+    answers: { property_type: 'single_family', condition: 'good' },
+    submitted_at: new Date().toISOString(),
+    test: true
+  }
+
+  try {
+    const res = await sendWebhook(config.webhook_url || '', testPayload)
+    if (res.ok) {
+      result.style.background = 'var(--green-dim)'
+      result.style.color = 'var(--green)'
+      result.textContent = '✓ Connection successful — webhook received the test payload'
+    } else {
+      result.style.background = 'var(--red-dim)'
+      result.style.color = 'var(--red)'
+      result.textContent = '✗ Webhook returned ' + res.status + ' — check your URL'
+    }
+  } catch(e) {
+    result.style.background = 'var(--red-dim)'
+    result.style.color = 'var(--red)'
+    result.textContent = '✗ Connection failed: ' + e.message
+  }
+}
+
+async function testExistingIntegration(id) {
+  const { data } = await sb.from('integrations').select('*').eq('id', id).single()
+  if (!data) return
+  showToast('↺ Sending test ping…')
+  const testPayload = {
+    lead_uid: 'lead_test_' + Date.now().toString(36),
+    full_name: 'Test Lead', email: 'test@example.com',
+    estimate: 5000, answers: {}, submitted_at: new Date().toISOString(), test: true
+  }
+  try {
+    if (data.type === 'webhook' || data.type === 'zapier') {
+      await sendWebhook(data.config.webhook_url, testPayload)
+    }
+    await sb.from('integrations').update({ last_synced_at: new Date().toISOString() }).eq('id', id)
+    showToast('✓ Test ping sent successfully')
+    loadIntegrations()
+  } catch(e) {
+    showToast('✗ Test failed: ' + e.message)
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  SYNC WORKER — fires when a lead is submitted
+//  Call this after a lead is created in the embed
+//  (or trigger manually from dashboard)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function syncLeadToCRM(leadId) {
+  if (!businessId) return
+
+  // Get integrations for this business
+  const { data: integrations } = await sb.from('integrations')
+    .select('*')
+    .eq('business_id', businessId)
+    .eq('status', 'active')
+
+  if (!integrations?.length) return
+
+  // Get lead data
+  const { data: lead } = await sb.from('leads').select('*').eq('id', leadId).single()
+  if (!lead) return
+
+  const payload = {
+    lead_uid:     lead.lead_uid,
+    full_name:    lead.full_name,
+    email:        lead.email,
+    phone:        lead.phone || '',
+    estimate:     lead.estimate_result?.total || 0,
+    answers:      lead.answers || {},
+    submitted_at: lead.created_at,
+  }
+
+  let allSuccess = true
+
+  for (const integration of integrations) {
+    try {
+      if (integration.type === 'webhook' || integration.type === 'zapier') {
+        const res = await sendWebhook(integration.config.webhook_url, payload)
+        if (!res.ok) throw new Error('HTTP ' + res.status)
+      } else if (integration.type === 'hubspot') {
+        await syncToHubSpot(integration.config.api_key, lead)
+      }
+
+      // Mark success
+      await sb.from('integrations').update({
+        last_synced_at: new Date().toISOString(),
+        error_count: 0
+      }).eq('id', integration.id)
+
+    } catch(e) {
+      allSuccess = false
+      await sb.from('integrations').update({
+        error_count: (integration.error_count || 0) + 1
+      }).eq('id', integration.id)
+
+      // Mark lead as failed with retry schedule
+      const retryCount = (lead.crm_retry_count || 0) + 1
+      const delayMs = [5,30,120,720,1440][Math.min(retryCount-1, 4)] * 60 * 1000
+      await sb.from('leads').update({
+        crm_status:      'failed',
+        crm_error:       e.message,
+        crm_retry_count: retryCount,
+        next_retry_at:   new Date(Date.now() + delayMs).toISOString()
+      }).eq('id', leadId)
+      return
+    }
+  }
+
+  if (allSuccess) {
+    await sb.from('leads').update({
+      crm_status:    'synced',
+      crm_synced_at: new Date().toISOString(),
+      crm_error:     null
+    }).eq('id', leadId)
+  }
+}
+
+async function sendWebhook(url, payload) {
+  return await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+}
+
+async function syncToHubSpot(apiKey, lead) {
+  const res = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify({
+      properties: {
+        email:     lead.email,
+        firstname: lead.full_name?.split(' ')?.[0] || '',
+        lastname:  lead.full_name?.split(' ')?.slice(1).join(' ') || '',
+        phone:     lead.phone || '',
+        hs_lead_status: 'NEW'
+      }
+    })
+  })
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.message || 'HubSpot error ' + res.status)
+  }
+  return res
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  RETRY QUEUE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function loadRetryQueue() {
   const { data, error } = await sb.from('leads')
     .select('id, lead_uid, full_name, estimator_id, crm_status, crm_error, crm_retry_count, next_retry_at')
@@ -2058,7 +2389,6 @@ async function loadRetryQueue() {
     return
   }
 
-  // Update nav badge
   const navBadge = document.querySelector('.nav-badge')
   if (navBadge) navBadge.textContent = data.length
 
@@ -2122,7 +2452,7 @@ const pageLoaders = {
   estimators: loadEstimators,
   leads:      loadLeads,
   analytics:  loadAnalytics,
-  crm:        loadRetryQueue,
+  crm:        async () => { await loadIntegrations(); await loadRetryQueue(); },
   settings:   loadSettings,
 }
 
