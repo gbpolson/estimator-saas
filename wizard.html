@@ -49,9 +49,7 @@ nav{padding:18px 32px;display:flex;align-items:center;gap:12px;border-bottom:1px
 .entry-sub{font-size:16px;color:var(--sub);max-width:460px;margin:0 auto 40px;}
 .entry-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;text-align:left;}
 .entry-card{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:24px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
-.entry-card::before{content:'';position:absolute;inset:0;background:var(--brand);opacity:0;transition:opacity .2s;}
 .entry-card:hover{border-color:var(--brand-m);transform:translateY(-2px);box-shadow:0 8px 32px rgba(45,106,79,.12);}
-.entry-card:hover::before{opacity:.03;}
 .ec-icon{font-size:28px;margin-bottom:14px;}
 .ec-title{font-size:16px;font-weight:600;color:var(--head);margin-bottom:6px;}
 .ec-desc{font-size:13px;color:var(--sub);line-height:1.5;}
