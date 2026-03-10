@@ -396,7 +396,27 @@ async function boot() {
 
   const params = new URLSearchParams(window.location.search)
   const editId  = params.get('id')
-  if (editId) await loadEstimator(editId)
+  if (editId) {
+    await loadEstimator(editId)
+  } else {
+    // Check for wizard/upload draft
+    const draft = sessionStorage.getItem('estimator_draft')
+    if (draft) {
+      try {
+        const d = JSON.parse(draft)
+        services = d.services || []
+        steps    = d.steps    || []
+        settings = d.settings || settings
+        if (d.name) document.getElementById('est-name').value = d.name
+        document.getElementById('est-slug').value = slugify(d.name || '')
+        document.getElementById('slug-preview').textContent = slugify(d.name || '') || 'my-estimator'
+        document.getElementById('est-spread').value   = settings.spread   || 0.25
+        document.getElementById('est-currency').value = settings.currency || '$'
+        sessionStorage.removeItem('estimator_draft')
+        showToast('✓ Draft loaded from wizard')
+      } catch(e) { console.warn('Could not load draft', e) }
+    }
+  }
 
   renderServices()
   renderSteps()
