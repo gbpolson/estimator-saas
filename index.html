@@ -640,7 +640,7 @@
           <option>Last 7 days</option>
           <option>This month</option>
         </select>
-        <button class="btn btn-primary btn-sm" onclick="openModal('new-estimator')">+ New Estimator</button>
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='builder.html'">+ New Estimator</button>
       </div>
     </div>
 
@@ -795,7 +795,8 @@
       <div class="topbar-title">Estimators</div>
       <div class="topbar-actions">
         <input class="search-input" placeholder="Search estimators…">
-        <button class="btn btn-primary btn-sm" onclick="openModal('new-estimator')">+ New Estimator</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('new-estimator')">+ Quick Create</button>
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='builder.html'">⊞ Build Estimator</button>
       </div>
     </div>
 
@@ -1418,7 +1419,7 @@
 //  SUPABASE CONFIG — paste your new key on line below
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const SUPABASE_URL = 'https://shjyorirrhdqwjfxrdsa.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoanlvcmlycmhkcXdqZnhyZHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwOTE2MDcsImV4cCI6MjA4ODY2NzYwN30.okhlyiDDFCUd36Gl9ZQ2NgMPl_MA4rlMYXcDyNyjjwQ'
+const SUPABASE_KEY = 'PASTE_YOUR_NEW_KEY_HERE'
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
@@ -1570,11 +1571,12 @@ async function loadEstimators() {
       <div class="estimator-name">${e.name}</div>
       <div class="estimator-slug">/embed/${e.slug}</div>
       <div class="estimator-stats">
-        <div><div class="e-stat-label">ID</div><div style="font-family:var(--mono);font-size:11px;color:var(--ink-3)">${e.id.slice(0,8)}</div></div>
+        <div><div class="e-stat-label">Slug</div><div style="font-family:var(--mono);font-size:11px;color:var(--ink-3)">${e.slug}</div></div>
       </div>
       <div class="estimator-actions">
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='builder.html?id=${e.id}'">✎ Edit</button>
         <button class="btn btn-ghost btn-sm" onclick="copyEmbed('${e.slug}')">Copy Embed</button>
-        ${e.status !== 'published' ? `<button class="btn btn-primary btn-sm" onclick="publishEstimator('${e.id}')">Publish</button>` : '<button class="btn btn-success btn-sm">Published</button>'}
+        ${e.status !== 'published' ? `<button class="btn btn-ghost btn-sm" onclick="publishEstimator('${e.id}')">Publish</button>` : '<span class="badge badge-green" style="align-self:center">Published</span>'}
       </div>
     </div>
   `).join('')
