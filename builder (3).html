@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estimator Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg:      #0a0b0e;
+  --bg-2:    #111318;
+  --bg-3:    #1a1d24;
+  --bg-4:    #22262f;
+  --line:    #2a2e38;
+  --line-2:  #363b47;
+  --mute:    #4a5060;
+  --sub:     #7a8099;
+  --body:    #c8cdd8;
+  --head:    #eef0f5;
+  --white:   #ffffff;
+  --brand:   #4f8ef7;
+  --brand-d: #1a3a7a;
+  --brand-g: rgba(79,142,247,.12);
+  --green:   #34d399;
+  --green-d: rgba(52,211,153,.12);
+  --amber:   #fbbf24;
+  --amber-d: rgba(251,191,36,.12);
+  --red:     #f87171;
+  --red-d:   rgba(248,113,113,.12);
+  --purple:  #a78bfa;
+  --r:       10px;
+  --font:    'Geist', sans-serif;
+  --mono:    'Geist Mono', monospace;
+}
+
+body { font-family:var(--font); background:var(--bg); color:var(--body); font-size:14px; line-height:1.5; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+
+/* ── TOPBAR ── */
+.topbar { height:52px; background:var(--bg-2); border-bottom:1px solid var(--line); display:flex; align-items:center; padding:0 20px; gap:14px; flex-shrink:0; }
+.logo { font-size:15px; font-weight:600; color:var(--head); letter-spacing:-.3px; }
+.logo span { color:var(--brand); }
+.top-sep { width:1px; height:20px; background:var(--line); }
+.est-name-input { background:none; border:none; color:var(--head); font:600 14px/1 var(--font); outline:none; min-width:140px; max-width:240px; }
+.est-name-input::placeholder { color:var(--mute); }
+.top-badge { padding:3px 8px; border-radius:99px; font-size:11px; font-weight:600; font-family:var(--mono); }
+.badge-draft     { background:var(--amber-d); color:var(--amber); }
+.badge-published { background:var(--green-d); color:var(--green); }
+.top-right { margin-left:auto; display:flex; gap:8px; align-items:center; }
+
+.btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:7px; font-size:13px; font-weight:500; font-family:var(--font); cursor:pointer; border:none; transition:all .15s; white-space:nowrap; }
+.btn-ghost   { background:transparent; color:var(--sub); border:1px solid var(--line); }
+.btn-ghost:hover { background:var(--bg-3); color:var(--body); border-color:var(--line-2); }
+.btn-brand   { background:var(--brand); color:#fff; }
+.btn-brand:hover { background:#3d7ef5; }
+.btn-danger  { background:var(--red-d); color:var(--red); border:1px solid rgba(248,113,113,.2); }
+.btn-danger:hover { background:rgba(248,113,113,.2); }
+.btn-sm { padding:5px 10px; font-size:12px; }
+.btn-icon { padding:6px; width:30px; height:30px; justify-content:center; }
+
+/* ── LAYOUT ── */
+.layout { display:grid; grid-template-columns:280px 1fr 320px; flex:1; overflow:hidden; }
+
+/* ── LEFT SIDEBAR ── */
+.sidebar { background:var(--bg-2); border-right:1px solid var(--line); overflow-y:auto; display:flex; flex-direction:column; }
+.sidebar-section { padding:16px; border-bottom:1px solid var(--line); }
+.sidebar-title { font-size:10px; font-weight:600; color:var(--mute); letter-spacing:.08em; text-transform:uppercase; margin-bottom:12px; }
+
+/* Tabs */
+.tabs { display:flex; gap:2px; background:var(--bg-3); border-radius:8px; padding:3px; margin-bottom:16px; }
+.tab { flex:1; padding:6px; text-align:center; font-size:12px; font-weight:500; color:var(--sub); cursor:pointer; border-radius:6px; transition:all .15s; }
+.tab.active { background:var(--bg-4); color:var(--head); }
+
+/* Field */
+.field { margin-bottom:12px; }
+.field:last-child { margin-bottom:0; }
+.label { display:block; font-size:11px; font-weight:500; color:var(--sub); margin-bottom:5px; }
+.input { width:100%; padding:8px 10px; background:var(--bg-3); border:1px solid var(--line); border-radius:7px; font-size:13px; font-family:var(--font); color:var(--head); outline:none; transition:border .15s; }
+.input:focus { border-color:var(--brand); }
+.input::placeholder { color:var(--mute); }
+.input-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+select.input { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234a5060' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; padding-right:28px; cursor:pointer; }
+
+/* ── SERVICES LIST ── */
+.service-item { background:var(--bg-3); border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:8px; cursor:pointer; transition:all .15s; }
+.service-item:hover { border-color:var(--line-2); }
+.service-item.active { border-color:var(--brand); background:var(--brand-g); }
+.service-name { font-size:13px; font-weight:500; color:var(--head); margin-bottom:2px; }
+.service-meta { font-size:11px; color:var(--sub); font-family:var(--mono); }
+.service-actions { display:flex; gap:4px; margin-top:8px; }
+
+/* ── STEPS LIST ── */
+.step-item { background:var(--bg-3); border:1px solid var(--line); border-radius:8px; margin-bottom:6px; overflow:hidden; transition:border .15s; }
+.step-item.active { border-color:var(--brand); }
+.step-item:hover { border-color:var(--line-2); }
+.step-header { display:flex; align-items:center; gap:8px; padding:10px 12px; cursor:pointer; }
+.step-num { width:20px; height:20px; border-radius:50%; background:var(--bg-4); color:var(--sub); font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:var(--mono); }
+.step-item.active .step-num { background:var(--brand); color:#fff; }
+.step-title { font-size:12px; font-weight:500; color:var(--body); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.step-type-tag { font-size:10px; font-family:var(--mono); color:var(--mute); flex-shrink:0; }
+.step-caret { color:var(--mute); font-size:10px; transition:transform .2s; }
+.step-item.active .step-caret { transform:rotate(180deg); }
+.step-body { display:none; padding:0 12px 12px; border-top:1px solid var(--line); padding-top:12px; }
+.step-item.active .step-body { display:block; }
+
+.add-row { display:flex; gap:6px; margin-top:8px; }
+.add-btn { flex:1; padding:8px; background:transparent; border:1px dashed var(--line); border-radius:7px; color:var(--mute); font-size:12px; font-weight:500; font-family:var(--font); cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center; gap:5px; }
+.add-btn:hover { border-color:var(--brand); color:var(--brand); background:var(--brand-g); }
+
+/* ── MIDDLE EDITOR ── */
+.editor { overflow-y:auto; padding:24px; background:var(--bg); }
+.editor-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--mute); text-align:center; gap:12px; }
+.editor-empty-icon { font-size:40px; }
+
+.card { background:var(--bg-2); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; margin-bottom:16px; }
+.card-header { padding:14px 18px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; }
+.card-title { font-size:13px; font-weight:600; color:var(--head); }
+.card-body { padding:18px; }
+
+/* Option rows */
+.opt-row { display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--bg-3); border-radius:7px; border:1px solid var(--line); margin-bottom:6px; }
+.opt-row input[type=text] { flex:1; background:none; border:none; color:var(--head); font:13px var(--font); outline:none; }
+.opt-row input[type=text]::placeholder { color:var(--mute); }
+.opt-tag { font-size:10px; font-family:var(--mono); color:var(--sub); white-space:nowrap; }
+.opt-price { width:80px; padding:4px 8px; background:var(--bg-4); border:1px solid var(--line); border-radius:5px; font-size:12px; font-family:var(--mono); color:var(--head); outline:none; text-align:center; }
+.opt-price:focus { border-color:var(--brand); }
+.opt-del { color:var(--mute); cursor:pointer; font-size:13px; padding:2px 5px; border-radius:4px; transition:all .15s; }
+.opt-del:hover { background:var(--red-d); color:var(--red); }
+
+/* Condition row */
+.cond-row { display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--bg-3); border-radius:7px; border:1px solid var(--line-2); font-size:12px; color:var(--sub); }
+.cond-row select { background:var(--bg-4); border:1px solid var(--line); border-radius:5px; color:var(--body); font:12px var(--font); padding:4px 8px; outline:none; cursor:pointer; }
+
+/* ── RIGHT PREVIEW ── */
+.preview-pane { background:var(--bg-2); border-left:1px solid var(--line); display:flex; flex-direction:column; overflow:hidden; }
+.preview-header { padding:14px 18px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; }
+.preview-title { font-size:11px; font-weight:600; color:var(--mute); letter-spacing:.08em; text-transform:uppercase; }
+.preview-nav { display:flex; gap:6px; align-items:center; }
+.preview-nav-btn { background:var(--bg-3); border:1px solid var(--line); border-radius:6px; color:var(--sub); font-size:11px; padding:4px 10px; cursor:pointer; transition:all .15s; font-family:var(--font); }
+.preview-nav-btn:hover { background:var(--bg-4); color:var(--body); }
+.preview-body { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; align-items:center; }
+
+/* ── WIDGET PREVIEW ── */
+.widget { width:100%; max-width:280px; background:#ffffff; border-radius:14px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.5); }
+.w-progress { height:3px; background:#e8eaed; border-radius:99px; margin-bottom:22px; overflow:hidden; }
+.w-progress-fill { height:100%; background:#4f8ef7; border-radius:99px; transition:width .4s; }
+.w-step-label { font-size:10px; font-weight:700; color:#4f8ef7; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; font-family:'Geist Mono',monospace; }
+.w-question { font-size:17px; font-weight:600; color:#0f1117; line-height:1.3; margin-bottom:5px; font-family:'Geist',sans-serif; }
+.w-hint { font-size:12px; color:#8e94a0; margin-bottom:16px; }
+
+/* Choice options */
+.w-options { display:flex; flex-direction:column; gap:6px; }
+.w-opt { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1.5px solid #e2e5ea; border-radius:9px; cursor:pointer; font-size:13px; color:#454952; transition:all .15s; font-family:'Geist',sans-serif; }
+.w-opt:hover { border-color:#93b4fb; background:#eff3fe; }
+.w-opt.sel { border-color:#4f8ef7; background:#eff3fe; color:#1d4ed8; font-weight:500; }
+.w-opt-dot { width:16px; height:16px; border-radius:50%; border:1.5px solid #e2e5ea; display:flex; align-items:center; justify-content:center; font-size:9px; flex-shrink:0; transition:all .15s; }
+.w-opt.sel .w-opt-dot { background:#4f8ef7; border-color:#4f8ef7; color:#fff; }
+
+/* Multi-select */
+.w-opt-check { width:16px; height:16px; border-radius:4px; border:1.5px solid #e2e5ea; display:flex; align-items:center; justify-content:center; font-size:9px; flex-shrink:0; transition:all .15s; }
+.w-opt.sel .w-opt-check { background:#4f8ef7; border-color:#4f8ef7; color:#fff; }
+
+/* Number / slider inputs */
+.w-input { width:100%; padding:11px 14px; border:1.5px solid #e2e5ea; border-radius:9px; font-size:15px; font-weight:500; font-family:'Geist',sans-serif; color:#111318; outline:none; transition:border .15s; }
+.w-input:focus { border-color:#4f8ef7; }
+.w-slider-wrap { padding:4px 0; }
+.w-slider { width:100%; appearance:none; height:4px; background:#e2e5ea; border-radius:99px; outline:none; }
+.w-slider::-webkit-slider-thumb { appearance:none; width:18px; height:18px; border-radius:50%; background:#4f8ef7; cursor:pointer; }
+.w-slider-labels { display:flex; justify-content:space-between; font-size:11px; color:#8e94a0; margin-top:6px; }
+
+/* Yes/No */
+.w-yesno { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.w-yesno-btn { padding:12px; border:1.5px solid #e2e5ea; border-radius:9px; font-size:13px; font-weight:500; color:#454952; cursor:pointer; transition:all .15s; text-align:center; font-family:'Geist',sans-serif; }
+.w-yesno-btn:hover { border-color:#93b4fb; background:#eff3fe; }
+.w-yesno-btn.sel { border-color:#4f8ef7; background:#eff3fe; color:#1d4ed8; }
+
+/* Nav */
+.w-nav { display:flex; gap:8px; margin-top:16px; }
+.w-btn-back { padding:9px 14px; border:1.5px solid #e2e5ea; border-radius:8px; font-size:12px; font-weight:500; color:#7a808f; cursor:pointer; font-family:'Geist',sans-serif; background:#fff; transition:all .15s; }
+.w-btn-back:hover { background:#f5f6f8; }
+.w-btn-next { flex:1; padding:10px; background:#4f8ef7; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Geist',sans-serif; transition:background .15s; }
+.w-btn-next:hover { background:#3d7ef5; }
+
+/* Result */
+.w-result-header { text-align:center; padding-bottom:16px; border-bottom:1px solid #e2e5ea; margin-bottom:16px; }
+.w-result-label { font-size:10px; font-weight:600; color:#8e94a0; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; font-family:'Geist Mono',monospace; }
+.w-result-total { font-size:40px; font-weight:700; color:#111318; letter-spacing:-1.5px; line-height:1; font-family:'Geist',sans-serif; }
+.w-result-range { font-size:12px; color:#8e94a0; margin-top:4px; }
+.w-line-items { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+.w-line { display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:7px 10px; background:#f5f6f8; border-radius:7px; }
+.w-line-name { color:#454952; }
+.w-line-val { font-weight:600; color:#111318; font-family:'Geist Mono',monospace; }
+.w-lead-form input { width:100%; padding:9px 12px; border:1.5px solid #e2e5ea; border-radius:8px; font-size:13px; font-family:'Geist',sans-serif; margin-bottom:8px; outline:none; color:#111318; }
+.w-lead-form input:focus { border-color:#4f8ef7; }
+.w-submit { width:100%; padding:12px; background:#4f8ef7; color:#fff; border:none; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Geist',sans-serif; }
+.w-privacy { text-align:center; font-size:10px; color:#8e94a0; margin-top:8px; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:20px; right:20px; background:var(--head); color:var(--bg); padding:10px 16px; border-radius:8px; font-size:13px; font-weight:500; box-shadow:0 8px 32px rgba(0,0,0,.3); z-index:300; display:none; animation:toastIn .2s ease; }
+.toast.show { display:block; }
+@keyframes toastIn { from{transform:translateY(8px);opacity:0} to{transform:none;opacity:1} }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--line); border-radius:99px; }
+
+/* Drag */
+.step-item.dragging { opacity:.4; }
+.step-item.drag-over { border-color:var(--brand); background:var(--brand-g); }
+
+/* Confirm dialog */
+.confirm-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:400; display:none; align-items:center; justify-content:center; }
+.confirm-overlay.open { display:flex; }
+.confirm-box { background:var(--bg-2); border:1px solid var(--line); border-radius:12px; padding:24px; width:360px; }
+.confirm-title { font-size:16px; font-weight:600; color:var(--head); margin-bottom:8px; }
+.confirm-sub { font-size:13px; color:var(--sub); margin-bottom:20px; line-height:1.5; }
+.confirm-actions { display:flex; gap:8px; justify-content:flex-end; }
+
+/* Embed section */
+.embed-code { background:var(--bg-3); border-radius:8px; padding:14px; font-family:var(--mono); font-size:12px; color:#a5f3fc; line-height:1.7; word-break:break-all; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">Estimator<span>SaaS</span></div>
+  <div class="top-sep"></div>
+  <input class="est-name-input" id="est-name" placeholder="Estimator name…" oninput="onNameChange(this.value)">
+  <span class="top-badge badge-draft" id="status-badge">Draft</span>
+  <div class="top-right">
+    <button class="btn btn-ghost btn-sm" onclick="confirmCancel()">✕ Close</button>
+    <button class="btn btn-ghost btn-sm" id="btn-save" onclick="saveEstimator()">Save Draft</button>
+    <button class="btn btn-brand btn-sm" id="btn-publish" onclick="publishEstimator()">Publish →</button>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section" style="padding-bottom:12px">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('services',this)">Services</div>
+        <div class="tab" onclick="switchTab('steps',this)">Steps</div>
+        <div class="tab" onclick="switchTab('settings',this)">Settings</div>
+      </div>
+    </div>
+
+    <!-- SERVICES TAB -->
+    <div id="tab-services" class="sidebar-section" style="flex:1">
+      <div class="sidebar-title">Service Catalog</div>
+      <div id="services-list"></div>
+      <button class="add-btn" style="width:100%;margin-top:4px" onclick="addService()">+ Add Service</button>
+    </div>
+
+    <!-- STEPS TAB -->
+    <div id="tab-steps" class="sidebar-section" style="flex:1;display:none">
+      <div class="sidebar-title">Question Steps</div>
+      <div id="steps-list"></div>
+      <div class="add-row">
+        <button class="add-btn" onclick="addStep('choice')">+ Choice</button>
+        <button class="add-btn" onclick="addStep('multi')">+ Multi</button>
+      </div>
+      <div class="add-row" style="margin-top:6px">
+        <button class="add-btn" onclick="addStep('number')">+ Number</button>
+        <button class="add-btn" onclick="addStep('yesno')">+ Yes/No</button>
+      </div>
+      <div class="add-row" style="margin-top:6px">
+        <button class="add-btn" onclick="addStep('slider')">+ Slider</button>
+        <button class="add-btn" onclick="addStep('services')">+ Service Picker</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="tab-settings" class="sidebar-section" style="flex:1;display:none">
+      <div class="sidebar-title">Estimator Settings</div>
+      <div class="field">
+        <label class="label">Slug (URL)</label>
+        <input class="input" id="est-slug" placeholder="my-estimator" style="font-family:var(--mono);font-size:12px" oninput="document.getElementById('slug-preview').textContent=this.value||'my-estimator'">
+        <div style="font-size:11px;color:var(--mute);margin-top:4px">yourapp.com/embed/<span id="slug-preview" style="color:var(--brand)">my-estimator</span></div>
+      </div>
+      <div class="field">
+        <label class="label">Description (internal)</label>
+        <input class="input" id="est-desc" placeholder="What is this estimator for?">
+      </div>
+      <div class="field">
+        <label class="label">Estimate Range</label>
+        <select class="input" id="est-spread">
+          <option value="0.15">±15% (tight)</option>
+          <option value="0.25" selected>±25% (standard)</option>
+          <option value="0.35">±35% (wide)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Currency</label>
+        <select class="input" id="est-currency">
+          <option value="$">USD ($)</option>
+          <option value="£">GBP (£)</option>
+          <option value="€">EUR (€)</option>
+          <option value="CAD$">CAD</option>
+          <option value="AUD$">AUD</option>
+        </select>
+      </div>
+      <div id="embed-section" style="display:none;margin-top:16px">
+        <div class="sidebar-title" style="margin-bottom:8px">Embed Code</div>
+        <div class="embed-code" id="embed-code-display"></div>
+        <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;justify-content:center" onclick="copyEmbed()">Copy Embed Code</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIDDLE EDITOR -->
+  <div class="editor" id="editor">
+    <div class="editor-empty" id="editor-empty">
+      <div class="editor-empty-icon">⊞</div>
+      <div style="font-size:14px;font-weight:500;color:var(--sub)">Select a service or step to edit</div>
+      <div style="font-size:12px;color:var(--mute)">Add services first, then build your question flow</div>
+    </div>
+    <div id="editor-content" style="display:none"></div>
+  </div>
+
+  <!-- RIGHT PREVIEW -->
+  <div class="preview-pane">
+    <div class="preview-header">
+      <div class="preview-title">Live Preview</div>
+      <div class="preview-nav">
+        <button class="preview-nav-btn" onclick="previewPrev()">←</button>
+        <span style="font-size:11px;color:var(--mute);font-family:var(--mono)" id="preview-counter">—</span>
+        <button class="preview-nav-btn" onclick="previewNext()">→</button>
+      </div>
+    </div>
+    <div class="preview-body" id="preview-body">
+      <div style="color:var(--mute);font-size:12px;text-align:center;padding:40px 0">Add steps to see preview</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CONFIRM CANCEL DIALOG -->
+<div class="confirm-overlay" id="confirm-cancel">
+  <div class="confirm-box">
+    <div class="confirm-title">Leave without saving?</div>
+    <div class="confirm-sub">Any unsaved changes will be lost. Save your draft first to keep your work.</div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('confirm-cancel').classList.remove('open')">Keep Editing</button>
+      <button class="btn btn-ghost btn-sm" onclick="saveAndClose()">Save & Close</button>
+      <button class="btn btn-danger" onclick="window.location.href='/'">Leave Anyway</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  CONFIG
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const SUPABASE_URL = 'https://shjyorirrhdqwjfxrdsa.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoanlvcmlycmhkcXdqZnhyZHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwOTE2MDcsImV4cCI6MjA4ODY2NzYwN30.okhlyiDDFCUd36Gl9ZQ2NgMPl_MA4rlMYXcDyNyjjwQ'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// ── State ──────────────────────────────────────
+let estimatorId    = null
+let businessId     = null
+let userId         = null
+let currentStatus  = 'draft'
+let hasUnsaved     = false
+let activeTab      = 'services'
+let activeService  = null  // index
+let activeStep     = null  // index
+let previewStepIdx = 0
+let previewAnswers = {}
+let dragSrcIdx     = null
+
+// Data model
+let services = []  // [{id, name, unit, base_price, description}]
+let steps    = []  // [{id, type, question, hint, service_id, options, formula, condition, ...}]
+let settings = { spread: 0.25, currency: '$' }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  BOOT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function boot() {
+  const { data: { session } } = await sb.auth.getSession()
+  if (!session) { window.location.href = '/'; return }
+  userId = session.user.id
+
+  const { data: mem } = await sb.from('memberships')
+    .select('business_id').eq('user_id', userId).limit(1).single()
+  if (mem) businessId = mem.business_id
+
+  const params = new URLSearchParams(window.location.search)
+  const editId  = params.get('id')
+  if (editId) await loadEstimator(editId)
+
+  renderServices()
+  renderSteps()
+  updatePreview()
+}
+
+async function loadEstimator(id) {
+  estimatorId = id
+  const { data: est } = await sb.from('estimators').select('*').eq('id', id).single()
+  if (!est) return
+
+  document.getElementById('est-name').value = est.name  || ''
+  document.getElementById('est-slug').value = est.slug  || ''
+  document.getElementById('est-desc').value = est.description || ''
+  document.getElementById('slug-preview').textContent = est.slug || 'my-estimator'
+  document.getElementById('est-name').dispatchEvent(new Event('input'))
+  currentStatus = est.status
+
+  if (est.published_version_id) {
+    const { data: ver } = await sb.from('estimator_versions')
+      .select('config').eq('id', est.published_version_id).single()
+    if (ver?.config) {
+      services = ver.config.services || []
+      steps    = ver.config.steps    || []
+      settings = ver.config.settings || settings
+      document.getElementById('est-spread').value   = settings.spread   || 0.25
+      document.getElementById('est-currency').value = settings.currency || '$'
+    }
+  }
+
+  updateStatusBadge()
+  renderServices()
+  renderSteps()
+  updatePreview()
+  if (currentStatus === 'published') showEmbedCode()
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  TABS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function switchTab(name, el) {
+  activeTab = name
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  el.classList.add('active')
+  document.getElementById('tab-services').style.display = name === 'services' ? 'block' : 'none'
+  document.getElementById('tab-steps').style.display    = name === 'steps'    ? 'block' : 'none'
+  document.getElementById('tab-settings').style.display = name === 'settings' ? 'block' : 'none'
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  SERVICES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const UNITS = ['flat', 'per hour', 'per day', 'per week', 'per month', 'per unit', 'per sq ft', 'per linear ft', 'per cu yd']
+
+function addService() {
+  services.push({ id: uid(), name: 'New Service', unit: 'flat', base_price: 0, description: '' })
+  renderServices()
+  selectService(services.length - 1)
+  markDirty()
+}
+
+function selectService(idx) {
+  activeService = idx
+  activeStep    = null
+  renderServices()
+  renderServiceEditor(idx)
+}
+
+function deleteService(idx) {
+  services.splice(idx, 1)
+  if (activeService === idx) { activeService = null; showEditorEmpty() }
+  renderServices()
+  updatePreview()
+  markDirty()
+}
+
+function renderServices() {
+  const list = document.getElementById('services-list')
+  if (!services.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--mute);text-align:center;padding:16px 0">No services yet</div>'
+    return
+  }
+  list.innerHTML = services.map((s, i) => `
+    <div class="service-item ${activeService === i ? 'active' : ''}" onclick="selectService(${i})">
+      <div class="service-name">${esc(s.name) || 'Unnamed service'}</div>
+      <div class="service-meta">${s.base_price ? fmtMoney(s.base_price) : '—'} ${s.unit}</div>
+      <div class="service-actions">
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="event.stopPropagation();deleteService(${i})" title="Remove">✕</button>
+      </div>
+    </div>`).join('')
+}
+
+function renderServiceEditor(idx) {
+  const s = services[idx]
+  document.getElementById('editor-empty').style.display   = 'none'
+  document.getElementById('editor-content').style.display = 'block'
+  document.getElementById('editor-content').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Service Details</div>
+        <button class="btn btn-danger btn-sm" onclick="deleteService(${idx})">Remove</button>
+      </div>
+      <div class="card-body">
+        <div class="input-row" style="margin-bottom:12px">
+          <div class="field" style="margin:0">
+            <label class="label">Service Name</label>
+            <input class="input" value="${esc(s.name)}" placeholder="e.g. Lawn Mowing"
+              oninput="services[${idx}].name=this.value;renderServices();updatePreview();markDirty()">
+          </div>
+          <div class="field" style="margin:0">
+            <label class="label">Category (optional)</label>
+            <input class="input" value="${esc(s.category||'')}" placeholder="e.g. Outdoor"
+              oninput="services[${idx}].category=this.value;markDirty()">
+          </div>
+        </div>
+        <div class="input-row" style="margin-bottom:12px">
+          <div class="field" style="margin:0">
+            <label class="label">Base Price</label>
+            <input class="input" type="number" value="${s.base_price}" min="0" step="0.01"
+              oninput="services[${idx}].base_price=parseFloat(this.value)||0;updatePreview();markDirty()">
+          </div>
+          <div class="field" style="margin:0">
+            <label class="label">Pricing Unit</label>
+            <select class="input" onchange="services[${idx}].unit=this.value;renderServices();updatePreview();markDirty()">
+              ${UNITS.map(u => `<option ${s.unit===u?'selected':''}>${u}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Description (shown to visitor)</label>
+          <input class="input" value="${esc(s.description||'')}" placeholder="Brief description of this service…"
+            oninput="services[${idx}].description=this.value;markDirty()">
+        </div>
+        <div class="input-row">
+          <div class="field" style="margin:0">
+            <label class="label">Min Price (optional)</label>
+            <input class="input" type="number" value="${s.min_price||''}" placeholder="0"
+              oninput="services[${idx}].min_price=parseFloat(this.value)||null;markDirty()">
+          </div>
+          <div class="field" style="margin:0">
+            <label class="label">Max Price (optional)</label>
+            <input class="input" type="number" value="${s.max_price||''}" placeholder="—"
+              oninput="services[${idx}].max_price=parseFloat(this.value)||null;markDirty()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Pricing Formula</div></div>
+      <div class="card-body">
+        <div class="field">
+          <label class="label">How is this service priced?</label>
+          <select class="input" id="formula-type-${idx}" onchange="updateFormulaFields(${idx})" >
+            <option value="flat"     ${(s.formula_type||'flat')==='flat'    ?'selected':''}>Flat fee (fixed price per selection)</option>
+            <option value="quantity" ${s.formula_type==='quantity'          ?'selected':''}>Quantity × price (how many units?)</option>
+            <option value="duration" ${s.formula_type==='duration'          ?'selected':''}>Duration × price (days/weeks/months)</option>
+            <option value="area"     ${s.formula_type==='area'              ?'selected':''}>Area × price (sq ft, linear ft, etc)</option>
+            <option value="tiered"   ${s.formula_type==='tiered'            ?'selected':''}>Tiered pricing (price changes by range)</option>
+          </select>
+        </div>
+        <div id="formula-fields-${idx}">
+          ${renderFormulaFields(idx)}
+        </div>
+        <div style="font-size:11px;color:var(--mute);margin-top:8px;padding:8px 10px;background:var(--bg-3);border-radius:6px" id="formula-preview-${idx}">
+          ${previewFormula(s)}
+        </div>
+      </div>
+    </div>`
+}
+
+function renderFormulaFields(idx) {
+  const s = services[idx]
+  const type = s.formula_type || 'flat'
+  if (type === 'flat') return `<div style="font-size:12px;color:var(--sub)">Visitor selects this service and the base price is added to the estimate.</div>`
+  if (type === 'quantity') return `
+    <div class="field">
+      <label class="label">Question to ask (e.g. "How many units?")</label>
+      <input class="input" value="${esc(s.qty_question||'')}" placeholder="How many do you need?"
+        oninput="services[${idx}].qty_question=this.value;markDirty()">
+    </div>
+    <div class="input-row">
+      <div class="field" style="margin:0"><label class="label">Min qty</label><input class="input" type="number" value="${s.qty_min||1}" oninput="services[${idx}].qty_min=parseInt(this.value)||1;markDirty()"></div>
+      <div class="field" style="margin:0"><label class="label">Max qty</label><input class="input" type="number" value="${s.qty_max||100}" oninput="services[${idx}].qty_max=parseInt(this.value)||100;markDirty()"></div>
+    </div>`
+  if (type === 'duration') return `
+    <div class="field">
+      <label class="label">Duration unit</label>
+      <select class="input" onchange="services[${idx}].duration_unit=this.value;markDirty()">
+        ${['days','weeks','months','hours'].map(u=>`<option ${s.duration_unit===u?'selected':''}>${u}</option>`).join('')}
+      </select>
+    </div>
+    <div class="input-row">
+      <div class="field" style="margin:0"><label class="label">Min</label><input class="input" type="number" value="${s.duration_min||1}" oninput="services[${idx}].duration_min=parseInt(this.value)||1;markDirty()"></div>
+      <div class="field" style="margin:0"><label class="label">Max</label><input class="input" type="number" value="${s.duration_max||30}" oninput="services[${idx}].duration_max=parseInt(this.value)||30;markDirty()"></div>
+    </div>`
+  if (type === 'area') return `
+    <div class="field">
+      <label class="label">Area unit</label>
+      <select class="input" onchange="services[${idx}].area_unit=this.value;markDirty()">
+        ${['sq ft','sq meters','linear ft','acres'].map(u=>`<option ${s.area_unit===u?'selected':''}>${u}</option>`).join('')}
+      </select>
+    </div>`
+  if (type === 'tiered') return `
+    <div class="field">
+      <label class="label">Tiers (range → price)</label>
+      <div id="tiers-${idx}">
+        ${(s.tiers||[{min:0,max:100,price:100}]).map((t,ti)=>`
+          <div class="opt-row" style="margin-bottom:6px">
+            <input type="number" class="opt-price" style="width:70px" value="${t.min}" placeholder="0" oninput="services[${idx}].tiers[${ti}].min=parseFloat(this.value)||0;markDirty()">
+            <span style="color:var(--mute);font-size:12px">–</span>
+            <input type="number" class="opt-price" style="width:70px" value="${t.max}" placeholder="100" oninput="services[${idx}].tiers[${ti}].max=parseFloat(this.value)||0;markDirty()">
+            <span style="color:var(--mute);font-size:12px">→</span>
+            <input type="number" class="opt-price" style="width:80px" value="${t.price}" placeholder="0" oninput="services[${idx}].tiers[${ti}].price=parseFloat(this.value)||0;markDirty()">
+            <div class="opt-del" onclick="services[${idx}].tiers.splice(${ti},1);renderServiceEditor(${idx})">✕</div>
+          </div>`).join('')}
+        <button class="add-btn" style="width:100%" onclick="if(!services[${idx}].tiers)services[${idx}].tiers=[];services[${idx}].tiers.push({min:0,max:100,price:100});renderServiceEditor(${idx})">+ Add Tier</button>
+      </div>
+    </div>`
+  return ''
+}
+
+function updateFormulaFields(idx) {
+  const type = document.getElementById(`formula-type-${idx}`).value
+  services[idx].formula_type = type
+  document.getElementById(`formula-fields-${idx}`).innerHTML = renderFormulaFields(idx)
+  document.getElementById(`formula-preview-${idx}`).textContent = previewFormula(services[idx])
+  updatePreview()
+  markDirty()
+}
+
+function previewFormula(s) {
+  const cur = document.getElementById('est-currency')?.value || '$'
+  const type = s.formula_type || 'flat'
+  const price = fmtMoney(s.base_price, cur)
+  if (type === 'flat')     return `Example: ${s.name || 'Service'} → ${price} added to estimate`
+  if (type === 'quantity') return `Example: 3 × ${price}/${s.unit} = ${fmtMoney(s.base_price * 3, cur)}`
+  if (type === 'duration') return `Example: 5 ${s.duration_unit||'days'} × ${price}/${s.unit} = ${fmtMoney(s.base_price * 5, cur)}`
+  if (type === 'area')     return `Example: 500 ${s.area_unit||'sq ft'} × ${price}/${s.unit} = ${fmtMoney(s.base_price * 500, cur)}`
+  return `Tiered pricing based on quantity`
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  STEPS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const STEP_TYPE_LABELS = { choice:'◉ Choice', multi:'☑ Multi-select', number:'# Number', yesno:'⊕ Yes/No', slider:'⟺ Slider', services:'⊞ Service Picker' }
+
+function addStep(type) {
+  const step = { id: uid(), type, question: '', hint: '', options: [], condition: null }
+  if (type === 'choice' || type === 'multi') {
+    step.options = [{ id: uid(), label: 'Option 1', value: 'opt_1', price_add: 0, multiplier: 1.0 }]
+  }
+  if (type === 'slider') { step.min = 0; step.max = 100; step.step = 1; step.default = 50 }
+  if (type === 'yesno')  { step.yes_multiplier = 1.0; step.no_multiplier = 1.0; step.yes_price_add = 0; step.no_price_add = 0 }
+  if (type === 'services') { step.service_ids = services.map(s => s.id) }
+  steps.push(step)
+  renderSteps()
+  selectStep(steps.length - 1)
+  markDirty()
+}
+
+function selectStep(idx) {
+  activeStep    = idx
+  activeService = null
+  renderSteps()
+  renderStepEditor(idx)
+}
+
+function deleteStep(idx) {
+  steps.splice(idx, 1)
+  if (activeStep === idx) { activeStep = null; showEditorEmpty() }
+  renderSteps()
+  updatePreview()
+  markDirty()
+}
+
+function renderSteps() {
+  const list = document.getElementById('steps-list')
+  const total = steps.length + (services.length > 0 ? 1 : 0) // +1 for service picker
+  if (!steps.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--mute);text-align:center;padding:12px 0">No steps yet</div>'
+    return
+  }
+  list.innerHTML = steps.map((s, i) => `
+    <div class="step-item ${activeStep === i ? 'active' : ''}" id="step-item-${i}"
+         draggable="true"
+         ondragstart="dragStart(event,${i})" ondragover="dragOver(event,${i})"
+         ondrop="dragDrop(event,${i})" ondragleave="dragLeave(event,${i})">
+      <div class="step-header" onclick="selectStep(${i})">
+        <div class="step-num">${i+1}</div>
+        <div class="step-title">${esc(s.question) || '<em style="color:var(--mute)">Untitled</em>'}</div>
+        <div class="step-type-tag">${STEP_TYPE_LABELS[s.type] || s.type}</div>
+        <div class="step-caret">▾</div>
+      </div>
+    </div>`).join('')
+}
+
+function renderStepEditor(idx) {
+  const s = steps[idx]
+  document.getElementById('editor-empty').style.display   = 'none'
+  document.getElementById('editor-content').style.display = 'block'
+
+  const conditionHtml = `
+    <div class="card">
+      <div class="card-header"><div class="card-title">Conditional Logic</div><span style="font-size:11px;color:var(--mute)">Show this step only if…</span></div>
+      <div class="card-body">
+        <div class="cond-row">
+          <span>Show if</span>
+          <select onchange="steps[${idx}].condition=steps[${idx}].condition||{};steps[${idx}].condition.step_id=this.value;markDirty()">
+            <option value="">Always show</option>
+            ${steps.filter((_,i)=>i!==idx).map(st=>`<option value="${st.id}" ${s.condition?.step_id===st.id?'selected':''}>${esc(st.question)||'Step '+(steps.indexOf(st)+1)}</option>`).join('')}
+          </select>
+          <select onchange="steps[${idx}].condition=steps[${idx}].condition||{};steps[${idx}].condition.operator=this.value;markDirty()">
+            <option value="equals" ${s.condition?.operator==='equals'?'selected':''}>equals</option>
+            <option value="not_equals" ${s.condition?.operator==='not_equals'?'selected':''}>does not equal</option>
+            <option value="includes" ${s.condition?.operator==='includes'?'selected':''}>includes</option>
+          </select>
+          <input class="input" style="flex:1;min-width:80px" placeholder="value" value="${esc(s.condition?.value||'')}"
+            oninput="steps[${idx}].condition=steps[${idx}].condition||{};steps[${idx}].condition.value=this.value;markDirty()">
+          <button class="btn btn-ghost btn-sm" onclick="steps[${idx}].condition=null;renderStepEditor(${idx});markDirty()">Clear</button>
+        </div>
+      </div>
+    </div>`
+
+  let typeHtml = ''
+
+  if (s.type === 'choice' || s.type === 'multi') {
+    typeHtml = `
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">${s.type === 'multi' ? 'Multi-Select' : 'Single Choice'} Options</div>
+          <span style="font-size:11px;color:var(--mute)">Set price impact per option</span>
+        </div>
+        <div class="card-body">
+          <div id="opts-${idx}">
+            ${renderOptionRows(idx)}
+          </div>
+          <button class="add-btn" style="width:100%;margin-top:4px" onclick="addOption(${idx})">+ Add Option</button>
+        </div>
+      </div>`
+  }
+
+  if (s.type === 'number') {
+    typeHtml = `
+      <div class="card">
+        <div class="card-header"><div class="card-title">Number Input</div></div>
+        <div class="card-body">
+          <div class="input-row" style="margin-bottom:12px">
+            <div class="field" style="margin:0"><label class="label">Prefix (e.g. $)</label><input class="input" value="${esc(s.prefix||'')}" placeholder="$" oninput="steps[${idx}].prefix=this.value;updatePreview();markDirty()"></div>
+            <div class="field" style="margin:0"><label class="label">Suffix (e.g. sq ft)</label><input class="input" value="${esc(s.suffix||'')}" placeholder="sq ft" oninput="steps[${idx}].suffix=this.value;updatePreview();markDirty()"></div>
+          </div>
+          <div class="input-row" style="margin-bottom:12px">
+            <div class="field" style="margin:0"><label class="label">Min</label><input class="input" type="number" value="${s.min||0}" oninput="steps[${idx}].min=parseFloat(this.value)||0;markDirty()"></div>
+            <div class="field" style="margin:0"><label class="label">Max</label><input class="input" type="number" value="${s.max||100000}" oninput="steps[${idx}].max=parseFloat(this.value)||100000;markDirty()"></div>
+          </div>
+          <div class="field">
+            <label class="label">Links to service (for pricing)</label>
+            <select class="input" onchange="steps[${idx}].linked_service_id=this.value;markDirty()">
+              <option value="">None — informational only</option>
+              ${services.map(sv=>`<option value="${sv.id}" ${s.linked_service_id===sv.id?'selected':''}>${esc(sv.name)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label class="label">This number represents</label>
+            <select class="input" onchange="steps[${idx}].number_role=this.value;markDirty()">
+              <option value="quantity" ${(s.number_role||'quantity')==='quantity'?'selected':''}>Quantity / count</option>
+              <option value="duration" ${s.number_role==='duration'?'selected':''}>Duration</option>
+              <option value="area"     ${s.number_role==='area'?'selected':''}>Area / size</option>
+              <option value="info"     ${s.number_role==='info'?'selected':''}>Informational only</option>
+            </select>
+          </div>
+        </div>
+      </div>`
+  }
+
+  if (s.type === 'slider') {
+    typeHtml = `
+      <div class="card">
+        <div class="card-header"><div class="card-title">Slider Settings</div></div>
+        <div class="card-body">
+          <div class="input-row" style="margin-bottom:12px">
+            <div class="field" style="margin:0"><label class="label">Min</label><input class="input" type="number" value="${s.min||0}" oninput="steps[${idx}].min=parseFloat(this.value)||0;updatePreview();markDirty()"></div>
+            <div class="field" style="margin:0"><label class="label">Max</label><input class="input" type="number" value="${s.max||100}" oninput="steps[${idx}].max=parseFloat(this.value)||100;updatePreview();markDirty()"></div>
+          </div>
+          <div class="input-row">
+            <div class="field" style="margin:0"><label class="label">Step</label><input class="input" type="number" value="${s.step||1}" oninput="steps[${idx}].step=parseFloat(this.value)||1;markDirty()"></div>
+            <div class="field" style="margin:0"><label class="label">Default</label><input class="input" type="number" value="${s.default||50}" oninput="steps[${idx}].default=parseFloat(this.value)||0;updatePreview();markDirty()"></div>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label class="label">Suffix label (e.g. "sq ft")</label>
+            <input class="input" value="${esc(s.suffix||'')}" oninput="steps[${idx}].suffix=this.value;updatePreview();markDirty()">
+          </div>
+          <div class="field">
+            <label class="label">Links to service</label>
+            <select class="input" onchange="steps[${idx}].linked_service_id=this.value;markDirty()">
+              <option value="">None</option>
+              ${services.map(sv=>`<option value="${sv.id}" ${s.linked_service_id===sv.id?'selected':''}>${esc(sv.name)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </div>`
+  }
+
+  if (s.type === 'yesno') {
+    typeHtml = `
+      <div class="card">
+        <div class="card-header"><div class="card-title">Yes / No Impact</div></div>
+        <div class="card-body">
+          <div class="input-row" style="margin-bottom:12px">
+            <div class="field" style="margin:0"><label class="label">Yes — add to estimate</label><input class="input" type="number" value="${s.yes_price_add||0}" oninput="steps[${idx}].yes_price_add=parseFloat(this.value)||0;updatePreview();markDirty()"></div>
+            <div class="field" style="margin:0"><label class="label">No — add to estimate</label><input class="input" type="number" value="${s.no_price_add||0}" oninput="steps[${idx}].no_price_add=parseFloat(this.value)||0;updatePreview();markDirty()"></div>
+          </div>
+          <div class="input-row">
+            <div class="field" style="margin:0"><label class="label">Yes — multiplier</label><input class="input" type="number" step="0.05" value="${s.yes_multiplier||1}" oninput="steps[${idx}].yes_multiplier=parseFloat(this.value)||1;updatePreview();markDirty()"></div>
+            <div class="field" style="margin:0"><label class="label">No — multiplier</label><input class="input" type="number" step="0.05" value="${s.no_multiplier||1}" oninput="steps[${idx}].no_multiplier=parseFloat(this.value)||1;updatePreview();markDirty()"></div>
+          </div>
+        </div>
+      </div>`
+  }
+
+  if (s.type === 'services') {
+    typeHtml = `
+      <div class="card">
+        <div class="card-header"><div class="card-title">Service Picker</div><span style="font-size:11px;color:var(--mute)">Visitor selects which services they need</span></div>
+        <div class="card-body">
+          <div style="font-size:12px;color:var(--sub);margin-bottom:12px">This step shows your service catalog as checkboxes. The visitor picks what they want and follow-up questions appear automatically.</div>
+          <label class="label">Which services to show</label>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+            ${services.map(sv=>`
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" ${(s.service_ids||[]).includes(sv.id)?'checked':''}
+                  onchange="toggleServiceInStep(${idx},'${sv.id}',this.checked)">
+                <span style="font-size:13px;color:var(--body)">${esc(sv.name)}</span>
+                <span style="font-size:11px;color:var(--mute);font-family:var(--mono)">${sv.base_price ? fmtMoney(sv.base_price) : ''} ${sv.unit}</span>
+              </label>`).join('')}
+          </div>
+          ${!services.length ? '<div style="font-size:12px;color:var(--mute)">Add services first in the Services tab</div>' : ''}
+        </div>
+      </div>`
+  }
+
+  document.getElementById('editor-content').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">${STEP_TYPE_LABELS[s.type]} — Step ${idx+1}</div>
+        <button class="btn btn-danger btn-sm" onclick="deleteStep(${idx})">Remove</button>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label class="label">Question</label>
+          <input class="input" value="${esc(s.question)}" placeholder="e.g. Which services do you need?"
+            oninput="steps[${idx}].question=this.value;renderSteps();updatePreview();markDirty()">
+        </div>
+        <div class="field">
+          <label class="label">Helper Text (optional)</label>
+          <input class="input" value="${esc(s.hint||'')}" placeholder="e.g. Select all that apply"
+            oninput="steps[${idx}].hint=this.value;updatePreview();markDirty()">
+        </div>
+      </div>
+    </div>
+    ${typeHtml}
+    ${conditionHtml}
+  `
+}
+
+function renderOptionRows(idx) {
+  const s = steps[idx]
+  return (s.options || []).map((o, oi) => `
+    <div class="opt-row">
+      <input type="text" value="${esc(o.label)}" placeholder="Option label"
+        oninput="steps[${idx}].options[${oi}].label=this.value;steps[${idx}].options[${oi}].value=slugify(this.value);updatePreview();markDirty()">
+      <span class="opt-tag">+$</span>
+      <input class="opt-price" type="number" step="1" value="${o.price_add||0}" title="Add to estimate"
+        oninput="steps[${idx}].options[${oi}].price_add=parseFloat(this.value)||0;updatePreview();markDirty()">
+      <span class="opt-tag">×</span>
+      <input class="opt-price" type="number" step="0.05" value="${o.multiplier||1}" title="Multiply estimate"
+        oninput="steps[${idx}].options[${oi}].multiplier=parseFloat(this.value)||1;updatePreview();markDirty()">
+      <div class="opt-del" onclick="removeOption(${idx},${oi})">✕</div>
+    </div>`).join('')
+}
+
+function addOption(stepIdx) {
+  const n = (steps[stepIdx].options || []).length + 1
+  steps[stepIdx].options.push({ id: uid(), label: 'Option ' + n, value: 'opt_' + n, price_add: 0, multiplier: 1.0 })
+  document.getElementById('opts-' + stepIdx).innerHTML = renderOptionRows(stepIdx)
+  updatePreview()
+  markDirty()
+}
+
+function removeOption(stepIdx, optIdx) {
+  if (steps[stepIdx].options.length <= 1) { showToast('Need at least one option'); return }
+  steps[stepIdx].options.splice(optIdx, 1)
+  document.getElementById('opts-' + stepIdx).innerHTML = renderOptionRows(stepIdx)
+  updatePreview()
+  markDirty()
+}
+
+function toggleServiceInStep(stepIdx, serviceId, checked) {
+  const step = steps[stepIdx]
+  step.service_ids = step.service_ids || []
+  if (checked) { if (!step.service_ids.includes(serviceId)) step.service_ids.push(serviceId) }
+  else          { step.service_ids = step.service_ids.filter(id => id !== serviceId) }
+  updatePreview()
+  markDirty()
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  DRAG TO REORDER STEPS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function dragStart(e, i) { dragSrcIdx = i; e.currentTarget.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move' }
+function dragOver(e, i)  { e.preventDefault(); if (i !== dragSrcIdx) document.getElementById('step-item-' + i)?.classList.add('drag-over') }
+function dragLeave(e, i) { document.getElementById('step-item-' + i)?.classList.remove('drag-over') }
+function dragDrop(e, i)  {
+  e.preventDefault()
+  if (dragSrcIdx === null || dragSrcIdx === i) return
+  const moved = steps.splice(dragSrcIdx, 1)[0]
+  steps.splice(i, 0, moved)
+  dragSrcIdx = null
+  renderSteps()
+  updatePreview()
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  LIVE PREVIEW
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function updatePreview() {
+  const body = document.getElementById('preview-body')
+  const cur  = document.getElementById('est-currency')?.value || '$'
+  const visibleSteps = getVisibleSteps()
+
+  if (!visibleSteps.length) {
+    body.innerHTML = '<div style="color:var(--mute);font-size:12px;text-align:center;padding:40px 0">Add steps to see preview</div>'
+    document.getElementById('preview-counter').textContent = '—'
+    return
+  }
+
+  const total = visibleSteps.length
+  const idx   = Math.max(0, Math.min(previewStepIdx, total))
+  document.getElementById('preview-counter').textContent = idx >= total ? 'Result' : `${idx+1} / ${total}`
+
+  if (idx >= total) {
+    body.innerHTML = renderResultPreview(cur)
+    return
+  }
+
+  const step = visibleSteps[idx]
+  const pct  = Math.round(idx / total * 100)
+  const ans  = previewAnswers[step.id]
+
+  let inputHtml = ''
+
+  if (step.type === 'choice') {
+    inputHtml = `<div class="w-options">${(step.options||[]).map(o=>`
+      <div class="w-opt ${ans===o.value?'sel':''}" onclick="previewSelect('${step.id}','${o.value}')">
+        <div class="w-opt-dot">${ans===o.value?'✓':''}</div>${esc(o.label||'Option')}
+      </div>`).join('')}</div>`
+  }
+  if (step.type === 'multi') {
+    const selArr = Array.isArray(ans) ? ans : []
+    inputHtml = `<div class="w-options">${(step.options||[]).map(o=>`
+      <div class="w-opt ${selArr.includes(o.value)?'sel':''}" onclick="previewToggleMulti('${step.id}','${o.value}')">
+        <div class="w-opt-check">${selArr.includes(o.value)?'✓':''}</div>${esc(o.label||'Option')}
+      </div>`).join('')}</div>`
+  }
+  if (step.type === 'yesno') {
+    inputHtml = `<div class="w-yesno">
+      <div class="w-yesno-btn ${ans==='yes'?'sel':''}" onclick="previewSelect('${step.id}','yes')">✓ Yes</div>
+      <div class="w-yesno-btn ${ans==='no'?'sel':''}"  onclick="previewSelect('${step.id}','no')">✗ No</div>
+    </div>`
+  }
+  if (step.type === 'number') {
+    inputHtml = `<div style="position:relative">
+      ${step.prefix?`<div style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#8e94a0;font-size:13px">${esc(step.prefix)}</div>`:''}
+      <input class="w-input" style="${step.prefix?'padding-left:28px':''}" type="number"
+        placeholder="${step.suffix||''}" value="${ans||''}"
+        oninput="previewAnswers['${step.id}']=this.value;updatePreview()">
+    </div>`
+  }
+  if (step.type === 'slider') {
+    const val = ans !== undefined ? ans : (step.default || step.min || 0)
+    inputHtml = `<div class="w-slider-wrap">
+      <input class="w-slider" type="range" min="${step.min||0}" max="${step.max||100}" step="${step.step||1}" value="${val}"
+        oninput="previewAnswers['${step.id}']=parseFloat(this.value);this.nextElementSibling.querySelector('span').textContent=this.value+(document.createElement('x').innerHTML='${esc(step.suffix||'')}')">
+      <div class="w-slider-labels"><span>${step.min||0} ${step.suffix||''}</span><span style="font-weight:600">${val} ${step.suffix||''}</span><span>${step.max||100} ${step.suffix||''}</span></div>
+    </div>`
+  }
+  if (step.type === 'services') {
+    const selArr = Array.isArray(ans) ? ans : []
+    const svcs   = services.filter(s => (step.service_ids||[]).includes(s.id))
+    inputHtml = `<div class="w-options">${svcs.map(s=>`
+      <div class="w-opt ${selArr.includes(s.id)?'sel':''}" onclick="previewToggleMulti('${step.id}','${s.id}')">
+        <div class="w-opt-check">${selArr.includes(s.id)?'✓':''}</div>
+        <div>
+          <div>${esc(s.name)}</div>
+          ${s.description?`<div style="font-size:11px;color:#8e94a0;margin-top:1px">${esc(s.description)}</div>`:''}
+        </div>
+        <div style="margin-left:auto;font-size:11px;font-family:'Geist Mono',monospace;color:#8e94a0">${fmtMoney(s.base_price,'$')} ${s.unit}</div>
+      </div>`).join('')}
+    </div>`
+  }
+
+  body.innerHTML = `
+    <div class="widget">
+      <div class="w-progress"><div class="w-progress-fill" style="width:${pct}%"></div></div>
+      <div class="w-step-label">Step ${idx+1} of ${total}</div>
+      <div class="w-question">${esc(step.question) || 'Your question goes here'}</div>
+      ${step.hint ? `<div class="w-hint">${esc(step.hint)}</div>` : '<div style="height:10px"></div>'}
+      ${inputHtml}
+      <div class="w-nav">
+        ${idx > 0 ? `<button class="w-btn-back" onclick="previewPrev()">← Back</button>` : ''}
+        <button class="w-btn-next" onclick="previewNext()">Continue →</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--mute);margin-top:12px;font-family:var(--mono);text-align:center">${idx+1} / ${total} steps</div>`
+}
+
+function renderResultPreview(cur) {
+  const lines   = calcLineItems(cur)
+  const total   = lines.reduce((sum, l) => sum + l.value, 0)
+  const spread  = parseFloat(document.getElementById('est-spread')?.value || '0.25')
+  const low     = Math.round(total * (1 - spread) / 10) * 10
+  const high    = Math.round(total * (1 + spread) / 10) * 10
+
+  return `<div class="widget">
+    <div class="w-progress"><div class="w-progress-fill" style="width:100%"></div></div>
+    <div class="w-result-header">
+      <div class="w-result-label">Your Estimate</div>
+      <div class="w-result-total">${fmtMoney(total, cur)}</div>
+      <div class="w-result-range">${fmtMoney(low,cur)} – ${fmtMoney(high,cur)}</div>
+    </div>
+    ${lines.length ? `<div class="w-line-items">${lines.map(l=>`
+      <div class="w-line">
+        <span class="w-line-name">${esc(l.label)}</span>
+        <span class="w-line-val">${fmtMoney(l.value, cur)}</span>
+      </div>`).join('')}
+    </div>` : ''}
+    <div style="font-size:12px;font-weight:600;color:#111318;text-align:center;margin-bottom:12px">Get your exact quote — free</div>
+    <div class="w-lead-form">
+      <input placeholder="Your name">
+      <input placeholder="Email address">
+      <input placeholder="Phone (optional)">
+      <button class="w-submit">Send Me My Quote →</button>
+    </div>
+    <div class="w-privacy">🔒 We never share your information</div>
+  </div>
+  <div style="font-size:11px;color:var(--mute);margin-top:12px;font-family:var(--mono);text-align:center">Result screen</div>`
+}
+
+function calcLineItems(cur) {
+  const lines = []
+  // Services selected in service picker steps
+  steps.forEach(step => {
+    if (step.type === 'services') {
+      const sel = Array.isArray(previewAnswers[step.id]) ? previewAnswers[step.id] : []
+      sel.forEach(svcId => {
+        const svc = services.find(s => s.id === svcId)
+        if (!svc) return
+        lines.push({ label: svc.name + ' (' + svc.unit + ')', value: svc.base_price })
+      })
+    }
+  })
+
+  // Number / slider steps linked to services
+  steps.forEach(step => {
+    if ((step.type === 'number' || step.type === 'slider') && step.linked_service_id) {
+      const svc = services.find(s => s.id === step.linked_service_id)
+      const qty = parseFloat(previewAnswers[step.id]) || 0
+      if (svc && qty > 0) {
+        lines.push({ label: svc.name + ' × ' + qty, value: svc.base_price * qty })
+      }
+    }
+  })
+
+  // Choice / multi options with price_add
+  steps.forEach(step => {
+    if (step.type === 'choice' && previewAnswers[step.id]) {
+      const opt = (step.options||[]).find(o => o.value === previewAnswers[step.id])
+      if (opt?.price_add > 0) lines.push({ label: step.question?.slice(0,30) + ': ' + opt.label, value: opt.price_add })
+    }
+    if (step.type === 'multi' && Array.isArray(previewAnswers[step.id])) {
+      previewAnswers[step.id].forEach(val => {
+        const opt = (step.options||[]).find(o => o.value === val)
+        if (opt?.price_add > 0) lines.push({ label: opt.label, value: opt.price_add })
+      })
+    }
+    if (step.type === 'yesno') {
+      const ans = previewAnswers[step.id]
+      const add = ans === 'yes' ? step.yes_price_add : ans === 'no' ? step.no_price_add : 0
+      if (add > 0) lines.push({ label: step.question?.slice(0,30), value: add })
+    }
+  })
+
+  return lines
+}
+
+function getVisibleSteps() {
+  return steps.filter(step => {
+    if (!step.condition?.step_id) return true
+    const refStep = steps.find(s => s.id === step.condition.step_id)
+    if (!refStep) return true
+    const ans = previewAnswers[refStep.id]
+    const val = step.condition.value
+    if (step.condition.operator === 'equals')     return String(ans) === String(val)
+    if (step.condition.operator === 'not_equals') return String(ans) !== String(val)
+    if (step.condition.operator === 'includes') {
+      return Array.isArray(ans) ? ans.includes(val) : String(ans).includes(val)
+    }
+    return true
+  })
+}
+
+function previewSelect(id, val) {
+  previewAnswers[id] = val
+  updatePreview()
+  setTimeout(() => previewNext(), 280)
+}
+
+function previewToggleMulti(id, val) {
+  if (!Array.isArray(previewAnswers[id])) previewAnswers[id] = []
+  const idx = previewAnswers[id].indexOf(val)
+  if (idx >= 0) previewAnswers[id].splice(idx, 1)
+  else           previewAnswers[id].push(val)
+  updatePreview()
+}
+
+function previewNext() { previewStepIdx = Math.min(previewStepIdx + 1, getVisibleSteps().length); updatePreview() }
+function previewPrev() { previewStepIdx = Math.max(previewStepIdx - 1, 0); updatePreview() }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  SAVE & PUBLISH
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function buildConfig() {
+  return {
+    services,
+    steps,
+    settings: {
+      spread:   parseFloat(document.getElementById('est-spread').value)   || 0.25,
+      currency: document.getElementById('est-currency').value || '$',
+    }
+  }
+}
+
+async function saveEstimator() {
+  const name = document.getElementById('est-name').value.trim()
+  const slug = document.getElementById('est-slug').value.trim() || slugify(name)
+  const desc = document.getElementById('est-desc').value.trim()
+
+  if (!name) { showToast('⚠ Enter a name first'); return }
+  if (!businessId) { showToast('⚠ No business found'); return }
+
+  const btn = document.getElementById('btn-save')
+  btn.textContent = 'Saving…'
+
+  try {
+    if (estimatorId) {
+      await sb.from('estimators').update({ name, slug, description: desc }).eq('id', estimatorId)
+    } else {
+      const { data, error } = await sb.from('estimators').insert({
+        name, slug, description: desc, business_id: businessId, created_by: userId, status: 'draft'
+      }).select('id').single()
+      if (error) throw error
+      estimatorId = data.id
+      window.history.replaceState({}, '', '?id=' + estimatorId)
+    }
+    hasUnsaved = false
+    showToast('✓ Draft saved')
+  } catch(e) { showToast('✗ ' + e.message) }
+  btn.textContent = 'Save Draft'
+}
+
+async function publishEstimator() {
+  await saveEstimator()
+  if (!estimatorId) return
+
+  const btn = document.getElementById('btn-publish')
+  btn.textContent = 'Publishing…'
+
+  try {
+    const config = buildConfig()
+    const { count } = await sb.from('estimator_versions').select('*', { count: 'exact', head: true }).eq('estimator_id', estimatorId)
+    const vNum = (count || 0) + 1
+
+    await sb.from('estimator_versions').update({ is_active: false }).eq('estimator_id', estimatorId)
+
+    const { data: ver, error } = await sb.from('estimator_versions').insert({
+      estimator_id: estimatorId, version_number: vNum, published_by: userId,
+      config, is_active: true, change_summary: 'Published from builder'
+    }).select('id').single()
+    if (error) throw error
+
+    await sb.from('estimators').update({ status: 'published', published_version_id: ver.id }).eq('id', estimatorId)
+
+    currentStatus = 'published'
+    updateStatusBadge()
+    showEmbedCode()
+    showToast('🚀 Published — v' + vNum + ' is live!')
+  } catch(e) { showToast('✗ ' + e.message) }
+  btn.textContent = 'Publish →'
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  CLOSE / CANCEL
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function confirmCancel() {
+  if (!hasUnsaved) { window.location.href = '/'; return }
+  document.getElementById('confirm-cancel').classList.add('open')
+}
+async function saveAndClose() {
+  await saveEstimator()
+  window.location.href = '/'
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  UTILS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function showEditorEmpty() {
+  document.getElementById('editor-empty').style.display   = 'flex'
+  document.getElementById('editor-content').style.display = 'none'
+}
+
+function onNameChange(val) {
+  const slugEl = document.getElementById('est-slug')
+  if (!slugEl.dataset.manual) {
+    slugEl.value = slugify(val)
+    document.getElementById('slug-preview').textContent = slugify(val) || 'my-estimator'
+  }
+}
+document.getElementById('est-slug')?.addEventListener('input', function() { this.dataset.manual = '1' })
+
+function updateStatusBadge() {
+  const b = document.getElementById('status-badge')
+  b.textContent  = currentStatus === 'published' ? 'Published' : 'Draft'
+  b.className    = 'top-badge ' + (currentStatus === 'published' ? 'badge-published' : 'badge-draft')
+}
+
+function showEmbedCode() {
+  const slug = document.getElementById('est-slug').value || 'your-estimator'
+  document.getElementById('embed-code-display').innerHTML =
+    `&lt;iframe src="https://yourapp.vercel.app/embed.html?slug=${slug}" width="100%" height="600" frameborder="0"&gt;&lt;/iframe&gt;`
+  document.getElementById('embed-section').style.display = 'block'
+}
+
+function copyEmbed() {
+  const slug = document.getElementById('est-slug').value || 'your-estimator'
+  navigator.clipboard?.writeText(`<iframe src="https://yourapp.vercel.app/embed.html?slug=${slug}" width="100%" height="600" frameborder="0"></iframe>`)
+  showToast('📋 Embed code copied')
+}
+
+function markDirty() { hasUnsaved = true }
+
+function fmtMoney(n, cur) {
+  const c = cur || document.getElementById('est-currency')?.value || '$'
+  return c + (Math.round(n || 0)).toLocaleString()
+}
+function slugify(s) { return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function uid() { return Math.random().toString(36).slice(2,10) }
+
+let toastTimer
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg; t.classList.add('show')
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000)
+}
+
+window.addEventListener('DOMContentLoaded', boot)
+window.addEventListener('beforeunload', e => { if (hasUnsaved) { e.preventDefault(); e.returnValue = '' } })
+</script>
+</body>
+</html>
