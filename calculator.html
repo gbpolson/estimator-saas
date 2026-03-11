@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROI Calculator — EstimatorSaaS</title>
+<style>
+:root {
+  --brand:    #2d6a4f;
+  --brand-l:  #52b788;
+  --brand-dim:#e8f5e9;
+  --ink:      #1a1814;
+  --ink-2:    #4a4540;
+  --ink-3:    #9e9689;
+  --surface:  #f8f5f0;
+  --border:   #e8e2d9;
+  --white:    #ffffff;
+  --green:    #16a34a;
+  --amber:    #d97706;
+  --radius:   14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0 }
+body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh }
+
+header {
+  background: var(--brand);
+  color: #fff;
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header .logo { font-size: 18px; font-weight: 700 }
+header .tagline { font-size: 13px; opacity: .75 }
+
+.hero {
+  background: linear-gradient(135deg, var(--brand) 0%, #1b4332 100%);
+  color: #fff;
+  padding: 60px 32px;
+  text-align: center;
+}
+.hero h1 { font-size: 38px; font-weight: 800; margin-bottom: 14px; line-height: 1.15 }
+.hero p  { font-size: 17px; opacity: .85; max-width: 560px; margin: 0 auto 32px; line-height: 1.6 }
+
+.main { max-width: 900px; margin: 0 auto; padding: 40px 20px }
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.card-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-header .icon { font-size: 18px }
+.card-header h2 { font-size: 15px; font-weight: 600 }
+.card-header p  { font-size: 12px; color: var(--ink-3); margin-top: 2px }
+.card-body { padding: 24px }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px }
+@media(max-width:600px) { .form-grid { grid-template-columns: 1fr } }
+
+.form-group { display: flex; flex-direction: column; gap: 6px }
+.form-label { font-size: 12px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em }
+.form-sub   { font-size: 11px; color: var(--ink-3); margin-top: 2px }
+.form-input {
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--white);
+  transition: border-color .15s;
+}
+.form-input:focus { outline: none; border-color: var(--brand) }
+.input-prefix { position: relative }
+.input-prefix input { padding-left: 28px }
+.input-prefix::before { content: attr(data-prefix); position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--ink-3) }
+
+.results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px }
+@media(max-width:600px) { .results-grid { grid-template-columns: 1fr } }
+
+.result-card {
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+.result-card.green  { background: #dcfce7; }
+.result-card.blue   { background: #dbeafe; }
+.result-card.amber  { background: #fef3c7; }
+.result-card .val   { font-size: 28px; font-weight: 800; margin-bottom: 4px }
+.result-card.green .val  { color: #166534 }
+.result-card.blue  .val  { color: #1e40af }
+.result-card.amber .val  { color: #92400e }
+.result-card .lbl   { font-size: 12px; font-weight: 600; opacity: .75 }
+.result-card .sub   { font-size: 11px; opacity: .6; margin-top: 3px }
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.breakdown-row:last-child { border-bottom: none }
+.breakdown-row .label { color: var(--ink-2) }
+.breakdown-row .val   { font-weight: 600; font-family: 'DM Mono', monospace }
+.breakdown-row .val.green { color: var(--green) }
+.breakdown-row .val.amber { color: var(--amber) }
+
+.cta-section {
+  background: linear-gradient(135deg, var(--brand), #1b4332);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  text-align: center;
+  color: #fff;
+  margin-top: 32px;
+}
+.cta-section h2 { font-size: 26px; font-weight: 700; margin-bottom: 10px }
+.cta-section p  { font-size: 15px; opacity: .85; margin-bottom: 28px }
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: #fff;
+  color: var(--brand);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  text-decoration: none;
+  transition: transform .15s, box-shadow .15s;
+}
+.btn-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.15) }
+
+.slider-wrap { display: flex; align-items: center; gap: 12px }
+.slider { flex: 1; -webkit-appearance: none; height: 6px; border-radius: 3px; background: var(--border); outline: none }
+.slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--brand); cursor: pointer }
+.slider-val { font-weight: 700; font-size: 15px; color: var(--brand); min-width: 40px; text-align: right }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--brand);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border) }
+
+.platform-cost {
+  background: var(--brand-dim);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+.platform-cost .label { font-size: 13px; font-weight: 500 }
+.platform-cost .price { font-size: 18px; font-weight: 700; color: var(--brand) }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">EstimatorSaaS</div>
+  </div>
+  <div class="tagline">ROI & Cost Savings Calculator</div>
+</header>
+
+<div class="hero">
+  <h1>How much could you save?</h1>
+  <p>Enter a few details about your business and we'll show you exactly how much time and money EstimatorSaaS could save you every month.</p>
+</div>
+
+<div class="main">
+
+  <!-- INPUTS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="icon">🏢</span>
+      <div><h2>About Your Business</h2><p>Tell us about your current operations</p></div>
+    </div>
+    <div class="card-body">
+      <div class="section-label">Team & Workload</div>
+      <div class="form-grid" style="margin-bottom:20px">
+        <div class="form-group">
+          <label class="form-label">Number of Employees / Drivers</label>
+          <div class="slider-wrap">
+            <input type="range" class="slider" id="inp-employees" min="1" max="50" value="5" oninput="updateSlider('employees');calc()">
+            <span class="slider-val" id="val-employees">5</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jobs / Service Calls Per Day</label>
+          <div class="slider-wrap">
+            <input type="range" class="slider" id="inp-jobs-day" min="1" max="100" value="15" oninput="updateSlider('jobs-day');calc()">
+            <span class="slider-val" id="val-jobs-day">15</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Leads / Estimates Per Month</label>
+          <div class="slider-wrap">
+            <input type="range" class="slider" id="inp-leads-mo" min="5" max="500" value="60" oninput="updateSlider('leads-mo');calc()">
+            <span class="slider-val" id="val-leads-mo">60</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Lead-to-Customer Conversion Rate (%)</label>
+          <div class="slider-wrap">
+            <input type="range" class="slider" id="inp-conv" min="5" max="80" value="25" oninput="updateSlider('conv');calc()">
+            <span class="slider-val" id="val-conv">25%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Time Costs</div>
+      <div class="form-grid" style="margin-bottom:20px">
+        <div class="form-group">
+          <label class="form-label">Avg. Time to Create Manual Estimate (mins)</label>
+          <div class="slider-wrap">
+            <input type="range" class="slider" id="inp-estimate-time" min="5" max="120" value="30" oninput="updateSlider('estimate-time');calc()">
+            <span class="slider-val" id="val-estimate-time">30</span>
+          </div>
+          <span class="form-sub">Per phone call / site visit estimate</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time Spent Planning Routes Per Day (mins)</label>
+          <div class="slider-wrap">
+            <input type="range" class="slider" id="inp-route-time" min="5" max="120" value="45" oninput="updateSlider('route-time');calc()">
+            <span class="slider-val" id="val-route-time">45</span>
+          </div>
+          <span class="form-sub">Dispatcher / owner time assigning jobs</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Avg. Drive Time Lost Per Driver Per Day (mins)</label>
+          <div class="slider-wrap">
+            <input type="range" class="slider" id="inp-drive-waste" min="0" max="120" value="35" oninput="updateSlider('drive-waste');calc()">
+            <span class="slider-val" id="val-drive-waste">35</span>
+          </div>
+          <span class="form-sub">Inefficient routing / backtracking</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Admin / Scheduling Hourly Rate ($)</label>
+          <div class="input-prefix" data-prefix="$">
+            <input type="number" class="form-input" id="inp-admin-rate" value="22" min="10" max="100" oninput="calc()">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Revenue</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Average Job Value ($)</label>
+          <div class="input-prefix" data-prefix="$">
+            <input type="number" class="form-input" id="inp-job-value" value="350" min="50" oninput="calc()">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Driver Hourly Cost ($)</label>
+          <div class="input-prefix" data-prefix="$">
+            <input type="number" class="form-input" id="inp-driver-rate" value="20" min="10" max="100" oninput="calc()">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card" id="results-card">
+    <div class="card-header">
+      <span class="icon">📊</span>
+      <div><h2>Your Estimated Savings</h2><p>Based on your inputs — updated in real time</p></div>
+    </div>
+    <div class="card-body">
+      <div class="results-grid">
+        <div class="result-card green">
+          <div class="val" id="res-time-saved">—</div>
+          <div class="lbl">Hours Saved / Month</div>
+          <div class="sub">Estimating + routing + admin</div>
+        </div>
+        <div class="result-card blue">
+          <div class="val" id="res-money-saved">—</div>
+          <div class="lbl">$ Saved / Month</div>
+          <div class="sub">Labor + fuel + missed jobs</div>
+        </div>
+        <div class="result-card amber">
+          <div class="val" id="res-extra-revenue">—</div>
+          <div class="lbl">Extra Revenue / Month</div>
+          <div class="sub">From faster lead conversion</div>
+        </div>
+      </div>
+
+      <div class="section-label">Breakdown</div>
+      <div id="breakdown-list"></div>
+
+      <div class="platform-cost">
+        <div>
+          <div class="label">EstimatorSaaS Platform Cost</div>
+          <div style="font-size:11px;color:var(--ink-3);margin-top:2px">All features included — estimator, dispatch, routing, driver app</div>
+        </div>
+        <div class="price">$149 / mo</div>
+      </div>
+
+      <div style="margin-top:16px;padding:16px;background:#f0fdf4;border-radius:10px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#166534">Net Monthly Gain</div>
+          <div style="font-size:11px;color:#4ade80;margin-top:2px">After platform cost</div>
+        </div>
+        <div style="font-size:24px;font-weight:800;color:#166534" id="res-net-gain">—</div>
+      </div>
+
+      <div style="margin-top:12px;text-align:center;font-size:12px;color:var(--ink-3)">
+        ROI: <strong id="res-roi" style="color:var(--brand)">—</strong> return on investment
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Ready to start saving?</h2>
+    <p>Join businesses already using EstimatorSaaS to win more leads, schedule smarter, and send drivers out optimized every morning.</p>
+    <a href="/" class="btn-cta">Start Free Trial →</a>
+  </div>
+
+</div>
+
+<script>
+function updateSlider(id) {
+  const el  = document.getElementById('inp-' + id)
+  const val = document.getElementById('val-' + id)
+  if (!el || !val) return
+  val.textContent = id === 'conv' ? el.value + '%' : el.value
+}
+
+function v(id) {
+  const el = document.getElementById(id)
+  return el ? parseFloat(el.value) || 0 : 0
+}
+
+function fmt(n, prefix='$') {
+  if (n >= 10000) return prefix + (n/1000).toFixed(1) + 'k'
+  return prefix + n.toLocaleString('en-US', { maximumFractionDigits: 0 })
+}
+
+function calc() {
+  const employees    = v('inp-employees')
+  const jobsDay      = v('inp-jobs-day')
+  const leadsMonth   = v('inp-leads-mo')
+  const convRate     = v('inp-conv') / 100
+  const estimateMins = v('inp-estimate-time')
+  const routeMins    = v('inp-route-time')
+  const driveWaste   = v('inp-drive-waste')
+  const adminRate    = v('inp-admin-rate')
+  const jobValue     = v('inp-job-value')
+  const driverRate   = v('inp-driver-rate')
+  const workDays     = 22 // avg working days per month
+
+  // TIME SAVINGS
+  // Estimating: platform handles instantly — saves estimateMins per lead
+  const estimateHrsSaved = (leadsMonth * estimateMins) / 60
+
+  // Route planning: platform auto-optimizes — saves routeMins/day
+  const routeHrsSaved = (routeMins / 60) * workDays
+
+  // Driver routing efficiency: reduce wasted drive time by 40%
+  const driveHrsSaved = (driveWaste * 0.40 / 60) * employees * workDays
+
+  const totalHrsSaved = estimateHrsSaved + routeHrsSaved + driveHrsSaved
+
+  // MONEY SAVINGS
+  // Admin labor saved
+  const adminSaved = (estimateHrsSaved + routeHrsSaved) * adminRate
+
+  // Driver fuel/time saved (avg $0.67/mile, ~30mph = ~$20/hr effective)
+  const driverTimeSaved = driveHrsSaved * driverRate
+
+  // Missed jobs recovered: more efficient routing = 1-2 extra jobs/driver/day
+  const extraJobsPerDriver = Math.min(2, driveWaste / 30)
+  const extraJobsMonth     = extraJobsPerDriver * employees * workDays * 0.5 // conservative
+  const extraJobRevenue    = extraJobsMonth * jobValue
+
+  const totalMoneySaved = adminSaved + driverTimeSaved
+
+  // EXTRA REVENUE
+  // Faster lead response = higher conversion (platform captures instantly vs manual follow-up)
+  const convBoost         = Math.min(0.15, convRate * 0.3) // up to 30% relative improvement
+  const extraLeadsConverted = leadsMonth * convBoost
+  const extraLeadRevenue    = extraLeadsConverted * jobValue
+  const totalExtraRevenue   = extraLeadRevenue + extraJobRevenue
+
+  // NET
+  const platformCost = 149
+  const netGain      = totalMoneySaved + totalExtraRevenue - platformCost
+  const roi          = platformCost > 0 ? Math.round((netGain / platformCost) * 100) : 0
+
+  // Update display
+  document.getElementById('res-time-saved').textContent    = Math.round(totalHrsSaved) + ' hrs'
+  document.getElementById('res-money-saved').textContent   = fmt(Math.round(totalMoneySaved))
+  document.getElementById('res-extra-revenue').textContent = fmt(Math.round(totalExtraRevenue))
+  document.getElementById('res-net-gain').textContent      = fmt(Math.round(netGain))
+  document.getElementById('res-roi').textContent           = roi + 'x'
+
+  // Breakdown
+  const rows = [
+    { label: 'Estimating time saved (' + Math.round(estimateHrsSaved) + ' hrs × $' + adminRate + '/hr)', val: fmt(Math.round(adminSaved)), cls: 'green' },
+    { label: 'Route planning saved (' + Math.round(routeHrsSaved) + ' hrs × $' + adminRate + '/hr)', val: fmt(Math.round(routeHrsSaved * adminRate)), cls: 'green' },
+    { label: 'Driver efficiency savings (' + Math.round(driveHrsSaved) + ' hrs recovered)', val: fmt(Math.round(driverTimeSaved)), cls: 'green' },
+    { label: 'Extra revenue from faster lead conversion', val: fmt(Math.round(extraLeadRevenue)), cls: 'green' },
+    { label: 'Extra jobs from optimized routing', val: fmt(Math.round(extraJobRevenue)), cls: 'green' },
+    { label: 'EstimatorSaaS platform cost', val: '−$149', cls: 'amber' },
+  ]
+
+  document.getElementById('breakdown-list').innerHTML = rows.map(r => `
+    <div class="breakdown-row">
+      <span class="label">${r.label}</span>
+      <span class="val ${r.cls}">${r.val}</span>
+    </div>`).join('')
+}
+
+// Init
+;['employees','jobs-day','leads-mo','conv','estimate-time','route-time','drive-waste'].forEach(id => updateSlider(id))
+calc()
+</script>
+</body>
+</html>
