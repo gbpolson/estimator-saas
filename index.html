@@ -2986,9 +2986,7 @@ function updateBookingApprovalHint() {
   const mode    = document.getElementById('booking-approval')?.value
   const hintEl  = document.getElementById('booking-approval-hint')
   if (!hintEl) return
-  hintEl.textContent = mode === 'auto'
-    ? '✅ Customers get instant confirmation — job is created automatically in your schedule.'
-    : '📋 Customers submit a request — you'll see it in your schedule as "Pending Approval" and can accept or decline.'
+  hintEl.textContent = mode === 'auto' ? '✅ Customers get instant confirmation — job is created automatically in your schedule.' : '📋 Customers submit a request — you will see it in your schedule as Pending Approval and can accept or decline.'
 }
 
 document.addEventListener('change', e => {
@@ -3320,8 +3318,7 @@ async function saveJob() {
   if (currentJobScheduleType === 'appointment') {
     const wStart = document.getElementById('job-window-start')?.value
     const wEnd   = document.getElementById('job-window-end')?.value
-    if (wStart) basePayload.notes = (basePayload.notes ? basePayload.notes + '
-' : '') + `Time window: ${wStart}–${wEnd || 'flexible'}`
+    if (wStart) basePayload.notes = (basePayload.notes ? basePayload.notes + '\n' : '') + `Time window: ${wStart}–${wEnd || 'flexible'}`
   }
 
   if (currentJobScheduleType === 'recurring') {
