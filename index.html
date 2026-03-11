@@ -1984,10 +1984,10 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
-    persistSession: true,
-    storageKey: 'estimatorsaas-auth',
-    storage: window.localStorage,
-    autoRefreshToken: true,
+    persistSession:    true,
+    storageKey:        'esaas-auth',
+    storage:           window.localStorage,
+    autoRefreshToken:  true,
     detectSessionInUrl: true
   }
 })
@@ -2041,24 +2041,15 @@ function showLogin() {
 }
 
 async function initAuth() {
-  // onAuthStateChange handles magic links, token refresh, tab switches
   sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
       if (session?.user) showApp(session.user)
     } else if (event === 'SIGNED_OUT') {
-      currentUser = null
-      businessId  = null
-      showLogin()
+      currentUser = null; businessId = null; showLogin()
     }
   })
-
-  // On page load, check localStorage for existing session
   const { data: { session } } = await sb.auth.getSession()
-  if (session?.user) {
-    showApp(session.user)
-  } else {
-    showLogin()
-  }
+  if (session?.user) { showApp(session.user) } else { showLogin() }
 }
 
 async function doLogin() {
@@ -2068,14 +2059,12 @@ async function doLogin() {
   errEl.textContent = ''
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass })
   if (error) { errEl.textContent = error.message; return }
-  if (data.user) showApp(data.user)
+  if (data?.session?.user) showApp(data.session.user)
 }
 
 async function doLogout() {
   await sb.auth.signOut()
-  currentUser = null
-  businessId  = null
-  showLogin()
+  currentUser = null; businessId = null; showLogin()
 }
 
 function loadUserMeta() {
