@@ -600,6 +600,44 @@
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  /* Job scheduling modal */
+  .job-type-btn {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--ink-2);
+    transition: all .15s;
+  }
+  .job-type-btn.active {
+    background: var(--brand-dim);
+    border-color: var(--brand);
+    color: var(--brand);
+    font-weight: 600;
+  }
+  .day-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all .15s;
+  }
+  .day-chip:has(input:checked) {
+    background: var(--brand-dim);
+    border-color: var(--brand);
+    color: var(--brand);
+  }
+  .job-fields-recurring { display: none }
 </style>
 </head>
 <body>
@@ -993,66 +1031,7 @@
               </tr>
             </thead>
             <tbody id="leads-table-body">
-              <tr>
-                <td style="padding-left:20px">
-                  <div class="lead-email">Sarah Chen</div>
-                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_7a2b9c</div>
-                </td>
-                <td>Roof Repair Cost</td>
-                <td class="lead-value">$4,200</td>
-                <td><span class="badge badge-brand">New</span></td>
-                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
-                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 14:22</td>
-                <td><button class="btn btn-ghost btn-sm">View</button></td>
-              </tr>
-              <tr>
-                <td style="padding-left:20px">
-                  <div class="lead-email">Marcus Webb</div>
-                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_4f8e1d</div>
-                </td>
-                <td>Kitchen Remodel</td>
-                <td class="lead-value">$18,500</td>
-                <td><span class="badge badge-green">Qualified</span></td>
-                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
-                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 13:48</td>
-                <td><button class="btn btn-ghost btn-sm">View</button></td>
-              </tr>
-              <tr>
-                <td style="padding-left:20px">
-                  <div class="lead-email">Priya Nair</div>
-                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_9c3a7f</div>
-                </td>
-                <td>Solar Panel Install</td>
-                <td class="lead-value">$9,800</td>
-                <td><span class="badge badge-brand">New</span></td>
-                <td><span class="badge badge-amber"><span class="dot"></span>Pending</span></td>
-                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 13:05</td>
-                <td><button class="btn btn-ghost btn-sm">View</button></td>
-              </tr>
-              <tr>
-                <td style="padding-left:20px">
-                  <div class="lead-email">Tom Ruiz</div>
-                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_2b5d8e</div>
-                </td>
-                <td>Roof Repair Cost</td>
-                <td class="lead-value">$2,100</td>
-                <td><span class="badge badge-brand">New</span></td>
-                <td><span class="badge badge-red"><span class="dot"></span>Failed · retry 2/5</span></td>
-                <td style="font-size:12px;color:var(--ink-3)">Mar 9, 11:30</td>
-                <td><button class="btn btn-ghost btn-sm" onclick="showToast('↺ Manual sync triggered')">Sync Now</button></td>
-              </tr>
-              <tr>
-                <td style="padding-left:20px">
-                  <div class="lead-email">Aisha Okonkwo</div>
-                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">lead_6e1f4a</div>
-                </td>
-                <td>Kitchen Remodel</td>
-                <td class="lead-value">$24,000</td>
-                <td><span class="badge badge-purple">Converted</span></td>
-                <td><span class="badge badge-green"><span class="dot"></span>Synced</span></td>
-                <td style="font-size:12px;color:var(--ink-3)">Mar 8, 16:14</td>
-                <td><button class="btn btn-ghost btn-sm">View</button></td>
-              </tr>
+              <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--ink-3)">Loading…</td></tr>
             </tbody>
           </table>
         </div>
@@ -1065,14 +1044,13 @@
     <div class="topbar">
       <div class="topbar-title">Analytics</div>
       <div class="topbar-actions">
-        <select class="form-input btn-sm" style="width:160px;font-size:12px">
-          <option>Roof Repair Cost</option>
-          <option>Kitchen Remodel</option>
-          <option>Solar Panel Install</option>
+        <select class="form-input btn-sm" id="ana-estimator-filter" style="width:180px;font-size:12px" onchange="loadAnalytics()">
+          <option value="">All Estimators</option>
         </select>
-        <select class="form-input btn-sm" style="width:130px;font-size:12px">
-          <option>Last 30 days</option>
-          <option>Last 7 days</option>
+        <select class="form-input btn-sm" id="ana-days-filter" style="width:130px;font-size:12px" onchange="loadAnalytics()">
+          <option value="30">Last 30 days</option>
+          <option value="7">Last 7 days</option>
+          <option value="90">Last 90 days</option>
         </select>
       </div>
     </div>
@@ -1087,40 +1065,9 @@
 
       <div class="two-col">
         <div class="card">
-          <div class="card-header"><div class="card-title">Step Drop-off</div></div>
-          <div class="card-body">
-            <div class="funnel">
-              <div class="funnel-step">
-                <div class="funnel-label" style="font-size:11px">Widget Load</div>
-                <div class="funnel-bar-wrap">
-                  <div class="funnel-bar" style="width:100%;background:var(--brand)"><span>2,140</span></div>
-                </div><div class="funnel-pct">100%</div>
-              </div>
-              <div class="funnel-step">
-                <div class="funnel-label" style="font-size:11px">Roof Type</div>
-                <div class="funnel-bar-wrap">
-                  <div class="funnel-bar" style="width:80%;background:#3b82f6"><span>1,712</span></div>
-                </div><div class="funnel-pct">80%</div>
-              </div>
-              <div class="funnel-step">
-                <div class="funnel-label" style="font-size:11px">Sq. Footage</div>
-                <div class="funnel-bar-wrap">
-                  <div class="funnel-bar" style="width:58%;background:#60a5fa"><span>1,241</span></div>
-                </div><div class="funnel-pct">58%</div>
-              </div>
-              <div class="funnel-step">
-                <div class="funnel-label" style="font-size:11px">Material</div>
-                <div class="funnel-bar-wrap">
-                  <div class="funnel-bar" style="width:42%;background:#93c5fd"><span>899</span></div>
-                </div><div class="funnel-pct">42%</div>
-              </div>
-              <div class="funnel-step">
-                <div class="funnel-label" style="font-size:11px">Lead Submit</div>
-                <div class="funnel-bar-wrap">
-                  <div class="funnel-bar" style="width:6.9%;background:var(--green)"><span>148</span></div>
-                </div><div class="funnel-pct">6.9%</div>
-              </div>
-            </div>
+          <div class="card-header"><div class="card-title">Step Drop-off Funnel</div></div>
+          <div class="card-body" id="ana-funnel-wrap">
+            <div style="text-align:center;padding:20px;color:var(--ink-3);font-size:13px">Loading funnel…</div>
           </div>
         </div>
 
@@ -1339,6 +1286,7 @@
       <div class="topbar-title">Schedule</div>
       <div class="topbar-actions">
         <input type="date" id="schedule-date" class="form-input" style="width:160px;font-size:13px" onchange="loadSchedule()">
+        <button class="btn btn-ghost btn-sm" onclick="openModal('upload-jobs')">⬆ Import CSV</button>
         <button class="btn btn-primary btn-sm" onclick="openAddJobModal()">+ Add Job</button>
       </div>
     </div>
@@ -1445,43 +1393,130 @@
 
   <!-- ── MODAL: ADD JOB ──────────────────────── -->
   <div class="modal-overlay" id="modal-add-job" onclick="closeModal(event)">
-    <div class="modal" style="max-width:520px">
+    <div class="modal" style="max-width:580px;max-height:92vh;overflow-y:auto">
       <div class="modal-title" id="job-modal-title">Add Job</div>
+
+      <!-- Job type tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="job-type-btn active" data-type="one_time" onclick="setJobScheduleType('one_time',this)">📅 One-time</button>
+        <button class="job-type-btn" data-type="recurring" onclick="setJobScheduleType('recurring',this)">🔁 Recurring</button>
+        <button class="job-type-btn" data-type="appointment" onclick="setJobScheduleType('appointment',this)">🕐 Appointment</button>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-        <div class="form-field" style="grid-column:1/-1"><label class="form-label">Job Title</label><input class="form-input" id="job-title" placeholder="e.g. Toilet rental delivery"></div>
+        <div class="form-field" style="grid-column:1/-1"><label class="form-label">Job Title</label><input class="form-input" id="job-title" placeholder="e.g. Toilet delivery — 123 Main St"></div>
+
         <div class="form-field"><label class="form-label">Service Type</label>
-          <select class="form-input" id="job-service-type">
-            <option value="delivery">Delivery</option>
-            <option value="service">Service / Maintenance</option>
-            <option value="pickup">Pickup</option>
-            <option value="install">Installation</option>
-            <option value="estimate">On-site Estimate</option>
+          <select class="form-input" id="job-service-type" onchange="updateJobTypeHints()">
+            <option value="delivery">📦 Delivery / Drop-off</option>
+            <option value="pickup">🔄 Pickup</option>
+            <option value="service">🔧 Service / Maintenance</option>
+            <option value="install">⚙️ Installation</option>
+            <option value="appointment">🗓 Appointment (electrician, plumber…)</option>
+            <option value="estimate">📋 On-site Estimate</option>
             <option value="other">Other</option>
           </select>
         </div>
+
         <div class="form-field"><label class="form-label">Priority</label>
           <select class="form-input" id="job-priority">
             <option value="normal">Normal</option>
-            <option value="urgent">Urgent (+fee)</option>
-            <option value="after_hours">After Hours (+fee)</option>
-            <option value="weekend">Weekend (+fee)</option>
+            <option value="urgent">🔴 Urgent (+fee)</option>
+            <option value="after_hours">🌙 After Hours (+fee)</option>
+            <option value="weekend">📅 Weekend (+fee)</option>
           </select>
         </div>
-        <div class="form-field" style="grid-column:1/-1"><label class="form-label">Address</label><input class="form-input" id="job-address" placeholder="123 Main St, City, State"></div>
-        <div class="form-field"><label class="form-label">Date</label><input class="form-input" type="date" id="job-date"></div>
-        <div class="form-field"><label class="form-label">Time</label><input class="form-input" type="time" id="job-time"></div>
-        <div class="form-field"><label class="form-label">Duration (mins)</label><input class="form-input" type="number" id="job-duration" value="60" min="15" step="15"></div>
+
+        <div class="form-field" style="grid-column:1/-1"><label class="form-label">Customer / Address</label>
+          <input class="form-input" id="job-customer" placeholder="Customer name" style="margin-bottom:8px">
+          <input class="form-input" id="job-address" placeholder="123 Main St, City, State">
+        </div>
+
+        <!-- ONE-TIME / APPOINTMENT fields -->
+        <div class="job-fields-one_time job-fields-appointment" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-field"><label class="form-label">Date</label><input class="form-input" type="date" id="job-date"></div>
+          <div class="form-field" id="job-time-field">
+            <label class="form-label">Time <span id="job-time-label" style="color:var(--ink-3);font-weight:400">(optional)</span></label>
+            <input class="form-input" type="time" id="job-time">
+          </div>
+        </div>
+
+        <!-- RECURRING fields -->
+        <div class="job-fields-recurring" style="grid-column:1/-1;display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div class="form-field"><label class="form-label">Start Date</label><input class="form-input" type="date" id="job-recur-start"></div>
+            <div class="form-field"><label class="form-label">End Date</label><input class="form-input" type="date" id="job-recur-end"></div>
+          </div>
+          <div class="form-field" style="margin-bottom:12px">
+            <label class="form-label">Repeat</label>
+            <select class="form-input" id="job-recur-freq" onchange="updateRecurFields()">
+              <option value="daily">Daily</option>
+              <option value="weekly" selected>Weekly</option>
+              <option value="biweekly">Every 2 weeks</option>
+              <option value="monthly">Monthly</option>
+              <option value="custom">Custom days</option>
+            </select>
+          </div>
+          <div id="recur-days-pick" style="margin-bottom:12px">
+            <label class="form-label" style="margin-bottom:8px;display:block">On These Days</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <label class="day-chip"><input type="checkbox" name="recur-day" value="1"> Mon</label>
+              <label class="day-chip"><input type="checkbox" name="recur-day" value="2"> Tue</label>
+              <label class="day-chip"><input type="checkbox" name="recur-day" value="3"> Wed</label>
+              <label class="day-chip"><input type="checkbox" name="recur-day" value="4"> Thu</label>
+              <label class="day-chip"><input type="checkbox" name="recur-day" value="5"> Fri</label>
+              <label class="day-chip"><input type="checkbox" name="recur-day" value="6"> Sat</label>
+              <label class="day-chip"><input type="checkbox" name="recur-day" value="0"> Sun</label>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Preferred Time (optional)</label>
+            <input class="form-input" type="time" id="job-recur-time" placeholder="Leave blank for any time">
+          </div>
+        </div>
+
+        <div class="form-field"><label class="form-label">Duration (mins)</label>
+          <select class="form-input" id="job-duration">
+            <option value="15">15 min</option>
+            <option value="30" selected>30 min</option>
+            <option value="45">45 min</option>
+            <option value="60">1 hour</option>
+            <option value="90">1.5 hours</option>
+            <option value="120">2 hours</option>
+            <option value="180">3 hours</option>
+            <option value="240">4 hours</option>
+          </select>
+        </div>
+
         <div class="form-field"><label class="form-label">Assign Driver</label>
           <select class="form-input" id="job-driver">
             <option value="">Auto-assign</option>
           </select>
         </div>
-        <div class="form-field"><label class="form-label">Price</label><input class="form-input" type="number" id="job-price" placeholder="0.00" step="0.01"></div>
-        <div class="form-field" style="grid-column:1/-1"><label class="form-label">Notes</label><textarea class="form-input" id="job-notes" rows="2" placeholder="Any special instructions…"></textarea></div>
+
+        <div class="form-field"><label class="form-label">Price ($)</label>
+          <input class="form-input" type="number" id="job-price" placeholder="0.00" step="0.01">
+        </div>
+
+        <div class="form-field" id="job-window-field" style="display:none">
+          <label class="form-label">Time Window</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="form-input" type="time" id="job-window-start" style="flex:1">
+            <span style="color:var(--ink-3);font-size:12px">to</span>
+            <input class="form-input" type="time" id="job-window-end" style="flex:1">
+          </div>
+          <span style="font-size:11px;color:var(--ink-3);margin-top:4px;display:block">Customer-requested arrival window</span>
+        </div>
+
+        <div class="form-field" style="grid-column:1/-1">
+          <label class="form-label">Notes / Instructions</label>
+          <textarea class="form-input" id="job-notes" rows="2" placeholder="Gate code, special access, equipment needed…"></textarea>
+        </div>
       </div>
+
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="document.getElementById('modal-add-job').classList.remove('open')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveJob()">Save Job</button>
+        <button class="btn btn-primary" id="save-job-btn" onclick="saveJob()">Save Job</button>
       </div>
     </div>
   </div>
@@ -1540,6 +1575,60 @@
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="document.getElementById('modal-add-driver').classList.remove('open')">Cancel</button>
         <button class="btn btn-primary" onclick="saveDriver()">Save Driver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL: UPLOAD JOBS ─────────────────────── -->
+  <div class="modal-overlay" id="modal-upload-jobs" onclick="closeModal(event)">
+    <div class="modal" style="max-width:540px">
+      <div class="modal-title">Import Jobs from Spreadsheet</div>
+      <div style="margin-bottom:16px;font-size:13px;color:var(--ink-2);line-height:1.6">
+        Upload a CSV or Excel file with job addresses. Required column: <code style="background:var(--surface);padding:1px 5px;border-radius:4px">address</code>.
+        Optional: <code style="background:var(--surface);padding:1px 5px;border-radius:4px">title</code>, <code style="background:var(--surface);padding:1px 5px;border-radius:4px">service_type</code>,
+        <code style="background:var(--surface);padding:1px 5px;border-radius:4px">scheduled_time</code>, <code style="background:var(--surface);padding:1px 5px;border-radius:4px">notes</code>,
+        <code style="background:var(--surface);padding:1px 5px;border-radius:4px">price</code>
+      </div>
+
+      <div id="upload-drop-zone" style="border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:16px"
+        onclick="document.getElementById('jobs-file-input').click()"
+        ondragover="event.preventDefault();this.style.borderColor='var(--brand)'"
+        ondragleave="this.style.borderColor='var(--border)'"
+        ondrop="handleJobFileDrop(event)">
+        <div style="font-size:28px;margin-bottom:8px">📁</div>
+        <div style="font-weight:600;margin-bottom:4px">Drop CSV or Excel here</div>
+        <div style="font-size:12px;color:var(--ink-3)">or click to browse</div>
+        <input type="file" id="jobs-file-input" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleJobFileSelect(event)">
+      </div>
+
+      <div style="margin-bottom:12px;display:flex;gap:10px">
+        <div class="form-field" style="flex:1">
+          <label class="form-label">Schedule Date</label>
+          <input class="form-input" type="date" id="upload-date">
+        </div>
+        <div class="form-field" style="flex:1">
+          <label class="form-label">Assign Driver (optional)</label>
+          <select class="form-input" id="upload-driver">
+            <option value="">Auto-assign / Optimize later</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="upload-preview" style="display:none;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Preview</div>
+        <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">
+          <table class="data-table" style="font-size:12px">
+            <thead><tr><th>#</th><th>Address</th><th>Title</th><th>Time</th></tr></thead>
+            <tbody id="upload-preview-body"></tbody>
+          </table>
+        </div>
+        <div id="upload-summary" style="font-size:12px;color:var(--ink-3);margin-top:8px"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="document.getElementById('modal-upload-jobs').classList.remove('open')">Cancel</button>
+        <a href="#" onclick="downloadJobTemplate()" style="font-size:12px;color:var(--brand);align-self:center;margin-right:auto">Download template</a>
+        <button class="btn btn-primary" id="upload-import-btn" disabled onclick="importJobsFromFile()">Import Jobs</button>
       </div>
     </div>
   </div>
@@ -2017,59 +2106,61 @@ let leadsFilter = { status: null, crm_status: null }
 
 async function loadLeads() {
   const tbody = document.getElementById('leads-table-body')
-  showLoading(tbody, 'Loading leads…')
+  if (!tbody) return
+  if (!businessId) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--ink-3)">No business found</td></tr>'; return }
 
   let query = sb.from('leads')
-    .select('id, lead_uid, full_name, email, estimator_id, estimate_result, status, crm_status, crm_retry_count, created_at')
+    .select('*, estimators(name)')
+    .eq('business_id', businessId)
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(100)
 
   if (leadsFilter.status)     query = query.eq('status', leadsFilter.status)
   if (leadsFilter.crm_status) query = query.eq('crm_status', leadsFilter.crm_status)
 
-  const { data, error } = await query
+  const { data: leads, error } = await query
+  const countEl = document.getElementById('leads-count')
+  if (countEl) countEl.textContent = (leads?.length || 0) + ' results'
 
-  if (error) { showError(tbody, 'Failed to load leads: ' + error.message); return }
-  if (!data?.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--ink-3)">No leads found</td></tr>'
+  if (error || !leads?.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--ink-3)">
+      <div style="font-size:24px;margin-bottom:10px">📋</div>
+      <div style="font-weight:600;margin-bottom:4px">No leads yet</div>
+      <div style="font-size:12px">Leads will appear here when visitors complete your estimator widget</div>
+    </td></tr>`
     return
   }
 
-  // Update total count
-  const countEl = document.getElementById('leads-count')
-  if (countEl) countEl.textContent = data.length + ' results'
+  const statusColors = { new: 'badge-brand', contacted: 'badge-amber', qualified: 'badge-green', converted: 'badge-purple', lost: 'badge-red' }
+  const crmColors    = { pending: 'badge-amber', synced: 'badge-green', failed: 'badge-red', skipped: '' }
 
-  tbody.innerHTML = data.map(l => {
-    const val = l.estimate_result?.total || l.estimate_result?.value || null
-    const retryInfo = l.crm_retry_count > 0 ? ` · retry ${l.crm_retry_count}/5` : ''
-    const crmBadge = `<span class="badge ${
-      l.crm_status==='synced' ? 'badge-green' :
-      l.crm_status==='failed' ? 'badge-red' : 'badge-amber'
-    }"><span class="dot"></span>${l.crm_status}${retryInfo}</span>`
+  tbody.innerHTML = leads.map(l => {
+    const estimate = l.estimate_result?.total || l.estimate_result?.estimate || 0
+    const date     = new Date(l.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})
+    const crmBadge = l.crm_status === 'synced'
+      ? `<span class="badge badge-green"><span class="dot"></span>Synced</span>`
+      : l.crm_status === 'failed'
+      ? `<span class="badge badge-red"><span class="dot"></span>Failed · retry ${l.crm_retry_count||0}/5</span>`
+      : `<span class="badge badge-amber"><span class="dot"></span>${l.crm_status || 'pending'}</span>`
+
     return `<tr>
       <td style="padding-left:20px">
-        <div class="lead-email">${l.full_name || 'Anonymous'}</div>
-        <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">${l.lead_uid || l.id?.slice(0,8)}</div>
+        <div style="font-weight:500">${l.full_name || l.email || 'Anonymous'}</div>
+        <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">${l.email || ''}</div>
       </td>
-      <td style="font-size:12px;color:var(--ink-3)">${l.estimator_id?.slice(0,8) || '—'}</td>
-      <td class="lead-value">${val ? fmtMoney(val) : '—'}</td>
-      <td>${badge(l.status)}</td>
+      <td style="font-size:12px">${l.estimators?.name || '—'}</td>
+      <td class="lead-value">${estimate ? '$' + Number(estimate).toLocaleString() : '—'}</td>
+      <td><span class="badge ${statusColors[l.status] || 'badge-brand'}">${l.status || 'new'}</span></td>
       <td>${crmBadge}</td>
-      <td style="font-size:12px;color:var(--ink-3)">${timeAgo(l.created_at)}</td>
-      <td>${l.crm_status==='failed' ?
-        `<button class="btn btn-ghost btn-sm" onclick="retrySyncLead('${l.id}')">Sync Now</button>` :
-        `<button class="btn btn-ghost btn-sm" onclick="openLeadDetail('${l.id}')">View</button>`
-      }</td>
+      <td style="font-size:12px;color:var(--ink-3)">${date}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-sm" onclick="openLeadDetail('${l.id}')">View</button>
+        <button class="btn btn-primary btn-sm" onclick="convertLeadToJob('${l.id}')" title="Convert to Job">→ Job</button>
+      </td>
     </tr>`
   }).join('')
 }
 
-function setLeadsFilter(type, value, el) {
-  leadsFilter[type] = leadsFilter[type] === value ? null : value
-  el.closest('.filter-row').querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'))
-  if (leadsFilter[type]) el.classList.add('active')
-  loadLeads()
-}
 
 async function retrySyncLead(leadId) {
   const { error } = await sb.from('leads').update({
@@ -2272,37 +2363,93 @@ async function exportLeadsCSV() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function loadAnalytics() {
   try {
-    const { count: views }   = await sb.from('estimator_events').select('*',{count:'exact',head:true}).eq('event_type','view')
-    const { count: submits } = await sb.from('estimator_events').select('*',{count:'exact',head:true}).eq('event_type','lead_submit')
-    const { count: leads }   = await sb.from('leads').select('*',{count:'exact',head:true})
+    // Populate estimator filter
+    const { data: estimators } = await sb.from('estimators').select('id,name').eq('business_id', businessId)
+    const anaFilter = document.getElementById('ana-estimator-filter')
+    if (anaFilter && estimators) {
+      const cur = anaFilter.value
+      anaFilter.innerHTML = '<option value="">All Estimators</option>' +
+        estimators.map(e => `<option value="${e.id}" ${cur===e.id?'selected':''}>${e.name}</option>`).join('')
+    }
 
-    const el = id => document.getElementById(id)
-    if (el('ana-views'))   el('ana-views').textContent   = fmt(views)
-    if (el('ana-submits')) el('ana-submits').textContent = fmt(submits)
-    if (el('ana-leads'))   el('ana-leads').textContent   = fmt(leads)
+    const days       = parseInt(document.getElementById('ana-days-filter')?.value || '30')
+    const estId      = document.getElementById('ana-estimator-filter')?.value
+    const fromDate   = new Date(Date.now() - days * 86400000).toISOString()
 
-    // Event type breakdown
-    const { data: eventBreakdown } = await sb.from('estimator_events')
-      .select('event_type')
-      .limit(1000)
+    let evQuery = sb.from('estimator_events').select('event_type, step_key, occurred_at', {count:'exact'}).gte('occurred_at', fromDate)
+    let ldQuery = sb.from('leads').select('id', {count:'exact'}).eq('business_id', businessId).gte('created_at', fromDate)
 
-    if (eventBreakdown) {
-      const counts = {}
-      eventBreakdown.forEach(e => counts[e.event_type] = (counts[e.event_type]||0)+1)
-      const breakdownEl = document.getElementById('event-breakdown')
-      if (breakdownEl) {
-        const total = Object.values(counts).reduce((a,b)=>a+b,0)
-        breakdownEl.innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([type,count]) => `
-          <div>
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-              <span>${type}</span><span style="font-family:var(--mono);font-weight:600">${fmt(count)}</span>
+    if (estId) {
+      const { data: est } = await sb.from('estimators').select('slug').eq('id', estId).single()
+      if (est) evQuery = evQuery.eq('estimator_uid', est.slug)
+      ldQuery = ldQuery.eq('estimator_id', estId)
+    }
+
+    const { data: events, count: totalEvents } = await evQuery.limit(5000)
+    const { count: leadCount } = await ldQuery
+
+    // Count by type
+    const counts = {}
+    events?.forEach(e => counts[e.event_type] = (counts[e.event_type]||0)+1)
+
+    const views   = counts['view'] || 0
+    const submits = counts['lead_submit'] || 0
+    const convRate = views > 0 ? ((submits / views) * 100).toFixed(1) : '0'
+
+    document.getElementById('ana-views').textContent   = fmt(views)
+    document.getElementById('ana-submits').textContent = fmt(submits)
+    document.getElementById('ana-leads').textContent   = fmt(leadCount || 0)
+
+    // Build funnel from step events
+    const stepCounts = {}
+    events?.filter(e => e.step_key && e.event_type === 'step_start').forEach(e => {
+      stepCounts[e.step_key] = (stepCounts[e.step_key]||0)+1
+    })
+
+    const funnelWrap = document.getElementById('ana-funnel-wrap')
+    if (funnelWrap) {
+      const funnelSteps = [
+        { label: 'Widget Views', count: views },
+        ...Object.entries(stepCounts).map(([k,v]) => ({ label: k, count: v })),
+        { label: 'Lead Submitted', count: submits }
+      ].filter(s => s.count > 0)
+
+      const maxCount = Math.max(...funnelSteps.map(s => s.count), 1)
+      const barColors = ['var(--brand)','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','var(--green)']
+
+      if (!funnelSteps.length || views === 0) {
+        funnelWrap.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);font-size:13px">No event data yet — embed your widget to start tracking</div>'
+      } else {
+        funnelWrap.innerHTML = `<div class="funnel">` + funnelSteps.map((s,i) => `
+          <div class="funnel-step">
+            <div class="funnel-label" style="font-size:11px">${s.label}</div>
+            <div class="funnel-bar-wrap">
+              <div class="funnel-bar" style="width:${Math.max(4,Math.round(s.count/maxCount*100))}%;background:${barColors[i%barColors.length]}">
+                <span>${fmt(s.count)}</span>
+              </div>
             </div>
-            <div style="background:var(--surface);border-radius:3px;height:5px">
-              <div style="width:${Math.round(count/total*100)}%;height:5px;border-radius:3px;background:var(--brand)"></div>
-            </div>
-          </div>
-        `).join('')
+            <div class="funnel-pct">${views > 0 ? Math.round(s.count/views*100) : 0}%</div>
+          </div>`).join('') + `</div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:20px;font-size:12px">
+            <div><span style="color:var(--ink-3)">Conversion rate: </span><strong style="color:var(--brand)">${convRate}%</strong></div>
+            <div><span style="color:var(--ink-3)">Total events: </span><strong>${fmt(totalEvents||0)}</strong></div>
+          </div>`
       }
+    }
+
+    // Event breakdown
+    const breakdownEl = document.getElementById('event-breakdown')
+    if (breakdownEl && events) {
+      const total = Object.values(counts).reduce((a,b)=>a+b,0)
+      breakdownEl.innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([type,count]) => `
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span>${type}</span><span style="font-family:var(--mono);font-weight:600">${fmt(count)}</span>
+          </div>
+          <div style="background:var(--surface);border-radius:3px;height:5px">
+            <div style="width:${Math.round(count/total*100)}%;height:5px;border-radius:3px;background:var(--brand)"></div>
+          </div>
+        </div>`).join('')
     }
   } catch(e) { console.error('Analytics error:', e) }
 }
@@ -2696,6 +2843,123 @@ document.addEventListener('change', function(e) {
     document.getElementById('after-hours-times').style.display = e.target.checked ? 'grid' : 'none'
   }
 })
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  CSV / SPREADSHEET JOB IMPORT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let parsedJobRows = []
+
+function downloadJobTemplate() {
+  const csv = 'address,title,service_type,scheduled_time,duration_mins,price,notes\n' +
+    '"123 Main St, Charlotte NC 28201","Toilet Delivery","delivery","09:00",30,150,"Leave at gate"\n' +
+    '"456 Oak Ave, Charlotte NC 28202","Toilet Service","service","10:30",20,75,""'
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const a    = document.createElement('a')
+  a.href     = URL.createObjectURL(blob)
+  a.download = 'jobs_template.csv'
+  a.click()
+}
+
+function handleJobFileDrop(e) {
+  e.preventDefault()
+  document.getElementById('upload-drop-zone').style.borderColor = 'var(--border)'
+  const file = e.dataTransfer.files[0]
+  if (file) parseJobFile(file)
+}
+
+function handleJobFileSelect(e) {
+  const file = e.target.files[0]
+  if (file) parseJobFile(file)
+}
+
+async function parseJobFile(file) {
+  const name = file.name.toLowerCase()
+  if (name.endsWith('.csv')) {
+    const text = await file.text()
+    parseCSVJobs(text)
+  } else {
+    showToast('Please upload a CSV file (.csv)')
+  }
+}
+
+function parseCSVJobs(text) {
+  const lines  = text.trim().split('\n')
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase())
+  parsedJobRows = lines.slice(1).filter(l => l.trim()).map(line => {
+    const vals = line.match(/(".*?"|[^,]+)(?=,|$)/g) || line.split(',')
+    const row  = {}
+    headers.forEach((h,i) => row[h] = (vals[i]||'').trim().replace(/^"|"$/g,''))
+    return row
+  }).filter(r => r.address)
+
+  showUploadPreview()
+}
+
+function showUploadPreview() {
+  if (!parsedJobRows.length) { showToast('No valid rows found — check your file'); return }
+
+  const tbody = document.getElementById('upload-preview-body')
+  tbody.innerHTML = parsedJobRows.slice(0,10).map((r,i) => `<tr>
+    <td style="padding-left:12px;color:var(--ink-3)">${i+1}</td>
+    <td>${r.address}</td>
+    <td style="color:var(--ink-2)">${r.title || '—'}</td>
+    <td style="font-family:var(--mono)">${r.scheduled_time || '—'}</td>
+  </tr>`).join('')
+
+  document.getElementById('upload-preview').style.display = 'block'
+  document.getElementById('upload-summary').textContent   = `${parsedJobRows.length} jobs found${parsedJobRows.length > 10 ? ' (showing first 10)' : ''}`
+  document.getElementById('upload-import-btn').disabled   = false
+
+  // Set date to today if not set
+  const dateEl = document.getElementById('upload-date')
+  if (!dateEl.value) dateEl.value = document.getElementById('schedule-date')?.value || new Date().toISOString().slice(0,10)
+
+  // Populate driver dropdown
+  populateDriverFilter().then(() => {
+    const uploadDrv = document.getElementById('upload-driver')
+    const schedDrv  = document.getElementById('sched-driver-filter')
+    if (uploadDrv && schedDrv) {
+      uploadDrv.innerHTML = '<option value="">Auto-assign / Optimize later</option>' +
+        Array.from(schedDrv.options).slice(1).map(o => `<option value="${o.value}">${o.text}</option>`).join('')
+    }
+  })
+}
+
+async function importJobsFromFile() {
+  if (!parsedJobRows.length) return
+  const date     = document.getElementById('upload-date').value
+  const driverId = document.getElementById('upload-driver').value || null
+  const btn      = document.getElementById('upload-import-btn')
+  btn.disabled   = true
+  btn.textContent = 'Importing…'
+
+  const jobs = parsedJobRows.map(r => ({
+    business_id:    businessId,
+    title:          r.title || r.address,
+    address:        r.address,
+    service_type:   r.service_type || 'service',
+    scheduled_date: date,
+    scheduled_time: r.scheduled_time || null,
+    duration_mins:  parseInt(r.duration_mins) || 30,
+    price:          parseFloat(r.price) || 0,
+    notes:          r.notes || '',
+    driver_id:      driverId,
+    status:         driverId ? 'assigned' : 'pending',
+    priority:       'normal'
+  }))
+
+  const { error } = await sb.from('jobs').insert(jobs)
+  if (error) { showToast('✗ Import failed: ' + error.message); btn.disabled = false; btn.textContent = 'Import Jobs'; return }
+
+  showToast(`✓ Imported ${jobs.length} jobs!`)
+  document.getElementById('modal-upload-jobs').classList.remove('open')
+  document.getElementById('schedule-date').value = date
+  parsedJobRows = []
+  document.getElementById('upload-preview').style.display = 'none'
+  btn.disabled    = false
+  btn.textContent = 'Import Jobs'
+  loadSchedule()
+}
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  SCHEDULE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2769,17 +3033,71 @@ async function populateDriverFilter() {
   if (jobDrv) jobDrv.innerHTML = '<option value="">Auto-assign</option>' + drivers.map(d => `<option value="${d.id}">${d.full_name}</option>`).join('')
 }
 
+let currentJobScheduleType = 'one_time'
+
+function setJobScheduleType(type, btn) {
+  currentJobScheduleType = type
+  document.querySelectorAll('.job-type-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+
+  // Show/hide fields
+  document.querySelectorAll('[class*="job-fields-"]').forEach(el => {
+    el.style.display = 'none'
+  })
+  document.querySelectorAll('.job-fields-' + type).forEach(el => {
+    el.style.display = el.classList.contains('job-fields-recurring') ? 'block' : 'grid'
+  })
+
+  // Appointment: make time required + show time window
+  const isAppt = type === 'appointment'
+  const timeLabel = document.getElementById('job-time-label')
+  const windowField = document.getElementById('job-window-field')
+  if (timeLabel) timeLabel.textContent = isAppt ? '(required)' : '(optional)'
+  if (windowField) windowField.style.display = isAppt ? 'block' : 'none'
+
+  // Update save button text
+  const saveBtn = document.getElementById('save-job-btn')
+  if (saveBtn) saveBtn.textContent = type === 'recurring' ? 'Create Recurring Jobs' : 'Save Job'
+}
+
+function updateJobTypeHints() {
+  const type = document.getElementById('job-service-type')?.value
+  // Auto-switch to appointment mode for appointment service types
+  if (type === 'appointment' && currentJobScheduleType === 'one_time') {
+    const btn = document.querySelector('[data-type="appointment"]')
+    if (btn) setJobScheduleType('appointment', btn)
+  }
+}
+
+function updateRecurFields() {
+  const freq = document.getElementById('job-recur-freq')?.value
+  const daysPick = document.getElementById('recur-days-pick')
+  if (!daysPick) return
+  // Show day picker for weekly/biweekly/custom
+  daysPick.style.display = ['weekly','biweekly','custom'].includes(freq) ? 'block' : 'none'
+}
+
 async function openAddJobModal() {
   editingJobId = null
+  currentJobScheduleType = 'one_time'
   document.getElementById('job-modal-title').textContent = 'Add Job'
-  document.getElementById('job-title').value    = ''
-  document.getElementById('job-address').value  = ''
-  document.getElementById('job-notes').value    = ''
-  document.getElementById('job-price').value    = ''
-  document.getElementById('job-date').value     = document.getElementById('schedule-date')?.value || new Date().toISOString().slice(0,10)
-  document.getElementById('job-time').value     = ''
-  document.getElementById('job-duration').value = '60'
-  document.getElementById('job-priority').value = 'normal'
+  document.getElementById('job-title').value         = ''
+  document.getElementById('job-address').value       = ''
+  document.getElementById('job-customer').value      = ''
+  document.getElementById('job-notes').value         = ''
+  document.getElementById('job-price').value         = ''
+  document.getElementById('job-date').value          = document.getElementById('schedule-date')?.value || new Date().toISOString().slice(0,10)
+  document.getElementById('job-time').value          = ''
+  document.getElementById('job-duration').value      = '30'
+  document.getElementById('job-priority').value      = 'normal'
+  document.getElementById('job-service-type').value  = 'delivery'
+  document.getElementById('job-recur-start').value   = new Date().toISOString().slice(0,10)
+  document.getElementById('job-recur-end').value     = ''
+  document.getElementById('job-recur-freq').value    = 'weekly'
+  // Reset type buttons
+  document.querySelectorAll('.job-type-btn').forEach(b => b.classList.remove('active'))
+  document.querySelector('[data-type="one_time"]')?.classList.add('active')
+  setJobScheduleType('one_time', document.querySelector('[data-type="one_time"]'))
   await populateDriverFilter()
   openModal('add-job')
 }
@@ -2807,19 +3125,38 @@ async function saveJob() {
   const title = document.getElementById('job-title').value.trim()
   if (!title) { showToast('⚠ Enter a job title'); return }
 
-  const payload = {
+  const basePayload = {
     title,
-    address:        document.getElementById('job-address').value.trim(),
-    notes:          document.getElementById('job-notes').value.trim(),
-    price:          parseFloat(document.getElementById('job-price').value) || 0,
+    address:      document.getElementById('job-address').value.trim(),
+    notes:        document.getElementById('job-notes').value.trim(),
+    price:        parseFloat(document.getElementById('job-price').value) || 0,
+    duration_mins: parseInt(document.getElementById('job-duration').value) || 30,
+    priority:     document.getElementById('job-priority').value,
+    service_type: document.getElementById('job-service-type').value,
+    driver_id:    document.getElementById('job-driver').value || null,
+    business_id:  businessId,
+    customer_name: document.getElementById('job-customer').value.trim(),
+  }
+  basePayload.status = basePayload.driver_id ? 'assigned' : 'pending'
+
+  // Handle time window for appointments
+  if (currentJobScheduleType === 'appointment') {
+    const wStart = document.getElementById('job-window-start')?.value
+    const wEnd   = document.getElementById('job-window-end')?.value
+    if (wStart) basePayload.notes = (basePayload.notes ? basePayload.notes + '
+' : '') + `Time window: ${wStart}–${wEnd || 'flexible'}`
+  }
+
+  if (currentJobScheduleType === 'recurring') {
+    await saveRecurringJobs(basePayload)
+    return
+  }
+
+  // One-time or appointment
+  const payload = {
+    ...basePayload,
     scheduled_date: document.getElementById('job-date').value,
     scheduled_time: document.getElementById('job-time').value || null,
-    duration_mins:  parseInt(document.getElementById('job-duration').value) || 60,
-    priority:       document.getElementById('job-priority').value,
-    service_type:   document.getElementById('job-service-type').value,
-    driver_id:      document.getElementById('job-driver').value || null,
-    status:         document.getElementById('job-driver').value ? 'assigned' : 'pending',
-    business_id:    businessId
   }
 
   if (editingJobId) {
@@ -2833,6 +3170,70 @@ async function saveJob() {
   }
 
   document.getElementById('modal-add-job').classList.remove('open')
+  loadSchedule()
+}
+
+async function saveRecurringJobs(basePayload) {
+  const startDate = new Date(document.getElementById('job-recur-start').value + 'T12:00:00')
+  const endDate   = new Date(document.getElementById('job-recur-end').value   + 'T12:00:00')
+  const freq      = document.getElementById('job-recur-freq').value
+  const time      = document.getElementById('job-recur-time').value || null
+
+  if (!startDate || !endDate || endDate < startDate) {
+    showToast('⚠ Set a valid start and end date'); return
+  }
+
+  // Get selected days of week (0=Sun, 1=Mon, …)
+  const selectedDays = Array.from(document.querySelectorAll('input[name="recur-day"]:checked')).map(el => parseInt(el.value))
+
+  const jobs      = []
+  const current   = new Date(startDate)
+  const maxJobs   = 366 // safety cap
+
+  while (current <= endDate && jobs.length < maxJobs) {
+    const dow = current.getDay()
+    let add   = false
+
+    if (freq === 'daily') {
+      add = true
+    } else if (freq === 'weekly' || freq === 'biweekly' || freq === 'custom') {
+      add = selectedDays.length === 0 || selectedDays.includes(dow)
+      if (freq === 'biweekly') {
+        // Only every other week — use week number
+        const weekNum = Math.floor((current - startDate) / (7 * 86400000))
+        add = add && weekNum % 2 === 0
+      }
+    } else if (freq === 'monthly') {
+      add = current.getDate() === startDate.getDate()
+    }
+
+    if (add) {
+      jobs.push({
+        ...basePayload,
+        scheduled_date: current.toISOString().slice(0,10),
+        scheduled_time: time,
+        title: basePayload.title + (freq !== 'daily' ? '' : ''),
+      })
+    }
+    current.setDate(current.getDate() + 1)
+  }
+
+  if (!jobs.length) { showToast('⚠ No matching dates found — check days selected'); return }
+
+  const btn = document.getElementById('save-job-btn')
+  btn.disabled    = true
+  btn.textContent = 'Creating ' + jobs.length + ' jobs…'
+
+  // Insert in batches of 50
+  for (let i = 0; i < jobs.length; i += 50) {
+    const { error } = await sb.from('jobs').insert(jobs.slice(i, i+50))
+    if (error) { showToast('✗ ' + error.message); btn.disabled = false; btn.textContent = 'Create Recurring Jobs'; return }
+  }
+
+  showToast(`✓ Created ${jobs.length} recurring jobs!`)
+  document.getElementById('modal-add-job').classList.remove('open')
+  btn.disabled    = false
+  btn.textContent = 'Create Recurring Jobs'
   loadSchedule()
 }
 
