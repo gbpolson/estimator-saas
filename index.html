@@ -1837,17 +1837,35 @@ function showError(el, msg) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let currentUser = null
 
+function showApp(user) {
+  currentUser = user
+  document.getElementById('auth-gate').style.display = 'none'
+  document.getElementById('app-shell').style.display  = 'flex'
+  loadOverview()
+  loadUserMeta()
+}
+
+function showLogin() {
+  document.getElementById('auth-gate').style.display  = 'flex'
+  document.getElementById('app-shell').style.display  = 'none'
+}
+
 async function initAuth() {
+  // Listen for auth state changes — catches magic links, password resets, etc.
+  sb.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      showApp(session.user)
+    } else {
+      showLogin()
+    }
+  })
+
+  // Also check existing session on load
   const { data: { session } } = await sb.auth.getSession()
   if (session) {
-    currentUser = session.user
-    document.getElementById('auth-gate').style.display = 'none'
-    document.getElementById('app-shell').style.display  = 'flex'
-    loadOverview()
-    loadUserMeta()
+    showApp(session.user)
   } else {
-    document.getElementById('auth-gate').style.display  = 'flex'
-    document.getElementById('app-shell').style.display  = 'none'
+    showLogin()
   }
 }
 
