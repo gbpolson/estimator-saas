@@ -639,6 +639,17 @@
     <span class="icon">⟁</span> Analytics
   </div>
 
+  <div class="sidebar-section">Dispatch</div>
+  <div class="nav-item" onclick="navigate('schedule')">
+    <span class="icon">📅</span> Schedule
+  </div>
+  <div class="nav-item" onclick="navigate('drivers')">
+    <span class="icon">🚗</span> Drivers
+  </div>
+  <div class="nav-item" onclick="navigate('routes')">
+    <span class="icon">🗺</span> Routes
+  </div>
+
   <div class="sidebar-section">Integrations</div>
   <div class="nav-item" onclick="navigate('embed')">
     <span class="icon">⊡</span> Embed & Widget
@@ -1321,6 +1332,188 @@
     </div>
   </div>
 
+
+  <!-- ── PAGE: SCHEDULE ──────────────────────── -->
+  <div id="page-schedule" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Schedule</div>
+      <div class="topbar-actions">
+        <input type="date" id="schedule-date" class="form-input" style="width:160px;font-size:13px" onchange="loadSchedule()">
+        <button class="btn btn-primary btn-sm" onclick="openAddJobModal()">+ Add Job</button>
+      </div>
+    </div>
+    <div style="padding:24px;display:flex;flex-direction:column;gap:16px">
+
+      <!-- Summary row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div class="card" style="padding:16px">
+          <div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Jobs Today</div>
+          <div style="font-size:26px;font-weight:700;color:var(--ink)" id="sched-total">—</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Assigned</div>
+          <div style="font-size:26px;font-weight:700;color:var(--green)" id="sched-assigned">—</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pending</div>
+          <div style="font-size:26px;font-weight:700;color:var(--amber)" id="sched-pending">—</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Completed</div>
+          <div style="font-size:26px;font-weight:700;color:var(--brand)" id="sched-completed">—</div>
+        </div>
+      </div>
+
+      <!-- Jobs table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Jobs</div>
+          <div style="display:flex;gap:8px">
+            <select class="form-input" style="width:160px;font-size:12px" id="sched-driver-filter" onchange="loadSchedule()">
+              <option value="">All Drivers</option>
+            </select>
+            <select class="form-input" style="width:140px;font-size:12px" id="sched-status-filter" onchange="loadSchedule()">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="assigned">Assigned</option>
+              <option value="en_route">En Route</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body" style="padding-top:0">
+          <table class="data-table">
+            <thead><tr><th>Job</th><th>Address</th><th>Time</th><th>Driver</th><th>Status</th><th>Priority</th><th></th></tr></thead>
+            <tbody id="schedule-table-body">
+              <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--ink-3)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: DRIVERS ───────────────────────── -->
+  <div id="page-drivers" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Drivers</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openAddDriverModal()">+ Add Driver</button>
+      </div>
+    </div>
+    <div style="padding:24px;display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Driver Roster</div></div>
+        <div class="card-body" style="padding-top:0">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Phone</th><th>Vehicle</th><th>Capacity</th><th>Working Days</th><th>After Hours</th><th>Status</th><th></th></tr></thead>
+            <tbody id="drivers-table-body">
+              <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--ink-3)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: ROUTES ────────────────────────── -->
+  <div id="page-routes" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Route Optimizer</div>
+      <div class="topbar-actions">
+        <input type="date" id="route-date" class="form-input" style="width:160px;font-size:13px">
+        <button class="btn btn-primary btn-sm" onclick="optimizeRoutes()">⚡ Optimize Routes</button>
+      </div>
+    </div>
+    <div style="padding:24px;display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Route Plan</div>
+          <span style="font-size:12px;color:var(--ink-3)">Jobs are grouped by driver and optimized for minimum drive time</span>
+        </div>
+        <div class="card-body" id="routes-content">
+          <div style="text-align:center;padding:40px;color:var(--ink-3)">
+            <div style="font-size:32px;margin-bottom:12px">🗺</div>
+            <div style="font-weight:600;margin-bottom:6px">No routes yet</div>
+            <div style="font-size:13px">Select a date and click Optimize Routes to generate driver routes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL: ADD JOB ──────────────────────── -->
+  <div class="modal-overlay" id="modal-add-job" onclick="closeModal(event)">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-title" id="job-modal-title">Add Job</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="form-field" style="grid-column:1/-1"><label class="form-label">Job Title</label><input class="form-input" id="job-title" placeholder="e.g. Toilet rental delivery"></div>
+        <div class="form-field"><label class="form-label">Service Type</label>
+          <select class="form-input" id="job-service-type">
+            <option value="delivery">Delivery</option>
+            <option value="service">Service / Maintenance</option>
+            <option value="pickup">Pickup</option>
+            <option value="install">Installation</option>
+            <option value="estimate">On-site Estimate</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-field"><label class="form-label">Priority</label>
+          <select class="form-input" id="job-priority">
+            <option value="normal">Normal</option>
+            <option value="urgent">Urgent (+fee)</option>
+            <option value="after_hours">After Hours (+fee)</option>
+            <option value="weekend">Weekend (+fee)</option>
+          </select>
+        </div>
+        <div class="form-field" style="grid-column:1/-1"><label class="form-label">Address</label><input class="form-input" id="job-address" placeholder="123 Main St, City, State"></div>
+        <div class="form-field"><label class="form-label">Date</label><input class="form-input" type="date" id="job-date"></div>
+        <div class="form-field"><label class="form-label">Time</label><input class="form-input" type="time" id="job-time"></div>
+        <div class="form-field"><label class="form-label">Duration (mins)</label><input class="form-input" type="number" id="job-duration" value="60" min="15" step="15"></div>
+        <div class="form-field"><label class="form-label">Assign Driver</label>
+          <select class="form-input" id="job-driver">
+            <option value="">Auto-assign</option>
+          </select>
+        </div>
+        <div class="form-field"><label class="form-label">Price</label><input class="form-input" type="number" id="job-price" placeholder="0.00" step="0.01"></div>
+        <div class="form-field" style="grid-column:1/-1"><label class="form-label">Notes</label><textarea class="form-input" id="job-notes" rows="2" placeholder="Any special instructions…"></textarea></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="document.getElementById('modal-add-job').classList.remove('open')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveJob()">Save Job</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL: ADD DRIVER ────────────────────── -->
+  <div class="modal-overlay" id="modal-add-driver" onclick="closeModal(event)">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-title" id="driver-modal-title">Add Driver</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="form-field" style="grid-column:1/-1"><label class="form-label">Full Name</label><input class="form-input" id="driver-name" placeholder="Driver name"></div>
+        <div class="form-field"><label class="form-label">Phone</label><input class="form-input" id="driver-phone" placeholder="555-000-0000" type="tel"></div>
+        <div class="form-field"><label class="form-label">Email</label><input class="form-input" id="driver-email" placeholder="driver@email.com" type="email"></div>
+        <div class="form-field"><label class="form-label">Vehicle</label><input class="form-input" id="driver-vehicle" placeholder="e.g. Ford F-250 White"></div>
+        <div class="form-field"><label class="form-label">Capacity (jobs/day)</label><input class="form-input" type="number" id="driver-capacity" value="10" min="1"></div>
+        <div class="form-field" style="grid-column:1/-1">
+          <label class="form-label">Working Days</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            ${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => `<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" id="driver-${d.toLowerCase()}" ${['Mon','Tue','Wed','Thu','Fri'].includes(d)?'checked':''}> ${d}</label>`).join('')}
+          </div>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" id="driver-after-hours"> Available for after-hours / weekend jobs (premium rate)
+          </label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="document.getElementById('modal-add-driver').classList.remove('open')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveDriver()">Save Driver</button>
+      </div>
+    </div>
+  </div>
   <!-- ── PAGE: SETTINGS ────────────────────────── -->
   <div id="page-settings" class="page">
     <div class="topbar"><div class="topbar-title">Settings</div></div>
@@ -1575,7 +1768,8 @@
 //  SUPABASE CONFIG — paste your new key on line below
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const SUPABASE_URL = 'https://shjyorirrhdqwjfxrdsa.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoanlvcmlycmhkcXdqZnhyZHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwOTE2MDcsImV4cCI6MjA4ODY2NzYwN30.okhlyiDDFCUd36Gl9ZQ2NgMPl_MA4rlMYXcDyNyjjwQ'
+const ORS_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImM4ZDhiNjNlZTQ3ZjQxMjM5YTI3Y2E0ODk1MzY5MDg2IiwiaCI6Im11cm11cjY0In0='
+const SUPABASE_KEY = 'PASTE_YOUR_NEW_KEY_HERE'
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
@@ -2447,6 +2641,433 @@ async function loadTeamMembers(businessId) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  NAVIGATION
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  SCHEDULE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let editingJobId = null
+
+async function loadSchedule() {
+  const dateEl = document.getElementById('schedule-date')
+  if (!dateEl.value) dateEl.value = new Date().toISOString().slice(0,10)
+  const date = dateEl.value
+  const driverFilter = document.getElementById('sched-driver-filter')?.value
+  const statusFilter = document.getElementById('sched-status-filter')?.value
+
+  let query = sb.from('jobs').select('*, drivers(full_name)')
+    .eq('business_id', businessId)
+    .eq('scheduled_date', date)
+    .order('scheduled_time', { ascending: true })
+
+  if (driverFilter) query = query.eq('driver_id', driverFilter)
+  if (statusFilter) query = query.eq('status', statusFilter)
+
+  const { data: jobs } = await query
+
+  // Update summary
+  document.getElementById('sched-total').textContent     = jobs?.length || 0
+  document.getElementById('sched-assigned').textContent  = jobs?.filter(j => j.driver_id).length || 0
+  document.getElementById('sched-pending').textContent   = jobs?.filter(j => j.status === 'pending').length || 0
+  document.getElementById('sched-completed').textContent = jobs?.filter(j => j.status === 'completed').length || 0
+
+  const tbody = document.getElementById('schedule-table-body')
+  if (!jobs?.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--ink-3)">
+      <div style="font-size:20px;margin-bottom:8px">📋</div>
+      <div style="font-weight:600;margin-bottom:4px">No jobs scheduled</div>
+      <div style="font-size:12px">Click + Add Job to schedule a job for this date</div>
+    </td></tr>`
+    return
+  }
+
+  const priorityColors = { normal: '', urgent: 'color:var(--amber);font-weight:600', after_hours: 'color:var(--red);font-weight:600', weekend: 'color:var(--purple);font-weight:600' }
+  const statusColors   = { pending: 'badge-amber', assigned: 'badge-brand', en_route: 'badge-purple', completed: 'badge-green', cancelled: 'badge-red' }
+
+  tbody.innerHTML = jobs.map(j => `<tr>
+    <td style="padding-left:20px">
+      <div style="font-weight:500">${j.title}</div>
+      <div style="font-size:11px;color:var(--ink-3)">${j.service_type || ''}</div>
+    </td>
+    <td style="font-size:12px;color:var(--ink-2);max-width:180px;overflow:hidden;text-overflow:ellipsis">${j.address || '—'}</td>
+    <td style="font-family:var(--mono);font-size:12px">${j.scheduled_time ? j.scheduled_time.slice(0,5) : '—'}</td>
+    <td>${j.drivers?.full_name ? `<span style="font-size:12px">${j.drivers.full_name}</span>` : `<button class="btn btn-ghost btn-sm" onclick="assignDriver('${j.id}')">Assign</button>`}</td>
+    <td><span class="badge ${statusColors[j.status] || ''}">${j.status}</span></td>
+    <td style="${priorityColors[j.priority] || ''};font-size:12px">${j.priority}</td>
+    <td style="display:flex;gap:4px">
+      <button class="btn btn-ghost btn-sm" onclick="editJob('${j.id}')">Edit</button>
+      <button class="btn btn-ghost btn-sm" onclick="deleteJob('${j.id}')">✕</button>
+    </td>
+  </tr>`).join('')
+
+  // Populate driver filter
+  await populateDriverFilter()
+}
+
+async function populateDriverFilter() {
+  const { data: drivers } = await sb.from('drivers').select('id,full_name').eq('business_id', businessId).eq('status','active')
+  const sel = document.getElementById('sched-driver-filter')
+  if (!sel || !drivers) return
+  const cur = sel.value
+  sel.innerHTML = '<option value="">All Drivers</option>' + drivers.map(d => `<option value="${d.id}" ${cur===d.id?'selected':''}>${d.full_name}</option>`).join('')
+
+  // Also populate job driver select
+  const jobDrv = document.getElementById('job-driver')
+  if (jobDrv) jobDrv.innerHTML = '<option value="">Auto-assign</option>' + drivers.map(d => `<option value="${d.id}">${d.full_name}</option>`).join('')
+}
+
+async function openAddJobModal() {
+  editingJobId = null
+  document.getElementById('job-modal-title').textContent = 'Add Job'
+  document.getElementById('job-title').value    = ''
+  document.getElementById('job-address').value  = ''
+  document.getElementById('job-notes').value    = ''
+  document.getElementById('job-price').value    = ''
+  document.getElementById('job-date').value     = document.getElementById('schedule-date')?.value || new Date().toISOString().slice(0,10)
+  document.getElementById('job-time').value     = ''
+  document.getElementById('job-duration').value = '60'
+  document.getElementById('job-priority').value = 'normal'
+  await populateDriverFilter()
+  openModal('add-job')
+}
+
+async function editJob(id) {
+  const { data: j } = await sb.from('jobs').select('*').eq('id', id).single()
+  if (!j) return
+  editingJobId = id
+  document.getElementById('job-modal-title').textContent = 'Edit Job'
+  document.getElementById('job-title').value        = j.title || ''
+  document.getElementById('job-address').value      = j.address || ''
+  document.getElementById('job-notes').value        = j.notes || ''
+  document.getElementById('job-price').value        = j.price || ''
+  document.getElementById('job-date').value         = j.scheduled_date || ''
+  document.getElementById('job-time').value         = j.scheduled_time?.slice(0,5) || ''
+  document.getElementById('job-duration').value     = j.duration_mins || 60
+  document.getElementById('job-priority').value     = j.priority || 'normal'
+  document.getElementById('job-service-type').value = j.service_type || 'delivery'
+  await populateDriverFilter()
+  document.getElementById('job-driver').value = j.driver_id || ''
+  openModal('add-job')
+}
+
+async function saveJob() {
+  const title = document.getElementById('job-title').value.trim()
+  if (!title) { showToast('⚠ Enter a job title'); return }
+
+  const payload = {
+    title,
+    address:        document.getElementById('job-address').value.trim(),
+    notes:          document.getElementById('job-notes').value.trim(),
+    price:          parseFloat(document.getElementById('job-price').value) || 0,
+    scheduled_date: document.getElementById('job-date').value,
+    scheduled_time: document.getElementById('job-time').value || null,
+    duration_mins:  parseInt(document.getElementById('job-duration').value) || 60,
+    priority:       document.getElementById('job-priority').value,
+    service_type:   document.getElementById('job-service-type').value,
+    driver_id:      document.getElementById('job-driver').value || null,
+    status:         document.getElementById('job-driver').value ? 'assigned' : 'pending',
+    business_id:    businessId
+  }
+
+  if (editingJobId) {
+    const { error } = await sb.from('jobs').update(payload).eq('id', editingJobId)
+    if (error) { showToast('✗ ' + error.message); return }
+    showToast('✓ Job updated')
+  } else {
+    const { error } = await sb.from('jobs').insert(payload)
+    if (error) { showToast('✗ ' + error.message); return }
+    showToast('✓ Job added')
+  }
+
+  document.getElementById('modal-add-job').classList.remove('open')
+  loadSchedule()
+}
+
+async function deleteJob(id) {
+  if (!confirm('Delete this job?')) return
+  await sb.from('jobs').delete().eq('id', id)
+  showToast('✓ Job deleted')
+  loadSchedule()
+}
+
+async function assignDriver(jobId) {
+  const { data: drivers } = await sb.from('drivers').select('id,full_name').eq('business_id', businessId).eq('status','active')
+  if (!drivers?.length) { showToast('No active drivers — add drivers first'); return }
+  const options = drivers.map((d,i) => `${i+1}. ${d.full_name}`).join('\n')
+  const choice  = prompt('Assign driver:\n' + options + '\n\nEnter number:')
+  if (!choice) return
+  const driver = drivers[parseInt(choice)-1]
+  if (!driver) return
+  await sb.from('jobs').update({ driver_id: driver.id, status: 'assigned' }).eq('id', jobId)
+  showToast('✓ Assigned to ' + driver.full_name)
+  loadSchedule()
+}
+
+// Convert lead to job
+async function convertLeadToJob(leadId) {
+  const { data: lead } = await sb.from('leads').select('*').eq('id', leadId).single()
+  if (!lead) return
+  editingJobId = null
+  document.getElementById('job-title').value   = lead.full_name + ' — ' + (lead.estimate_result?.title || 'Service')
+  document.getElementById('job-price').value   = lead.estimate_result?.total || ''
+  document.getElementById('job-date').value    = new Date().toISOString().slice(0,10)
+  document.getElementById('job-notes').value   = 'Converted from lead ' + (lead.lead_uid || '')
+  await populateDriverFilter()
+  openModal('add-job')
+  navigate('schedule')
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  DRIVERS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let editingDriverId = null
+
+async function loadDrivers() {
+  const { data: drivers } = await sb.from('drivers').select('*').eq('business_id', businessId).order('full_name')
+  const tbody = document.getElementById('drivers-table-body')
+  if (!drivers?.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--ink-3)">
+      <div style="font-size:20px;margin-bottom:8px">🚗</div>
+      <div style="font-weight:600;margin-bottom:4px">No drivers yet</div>
+      <div style="font-size:12px">Add your first driver to start scheduling routes</div>
+    </td></tr>`
+    return
+  }
+
+  const dayKeys = ['mon','tue','wed','thu','fri','sat','sun']
+  const dayLabels = ['M','T','W','T','F','S','S']
+
+  tbody.innerHTML = drivers.map(d => {
+    const wh = d.working_hours || {}
+    const days = dayKeys.map((k,i) => `<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:600;background:${wh[k]?'var(--brand-dim)':'var(--surface)'};color:${wh[k]?'var(--brand)':'var(--ink-3)'}">${dayLabels[i]}</span>`).join('')
+    return `<tr>
+      <td style="padding-left:20px;font-weight:500">${d.full_name}</td>
+      <td style="font-size:12px;font-family:var(--mono)">${d.phone || '—'}</td>
+      <td style="font-size:12px">${d.vehicle || '—'}</td>
+      <td style="font-family:var(--mono);font-size:13px;text-align:center">${d.capacity}</td>
+      <td><div style="display:flex;gap:2px">${days}</div></td>
+      <td style="text-align:center">${d.after_hours ? '<span style="color:var(--green)">✓</span>' : '<span style="color:var(--ink-3)">—</span>'}</td>
+      <td><span class="badge ${d.status==='active'?'badge-green':'badge-red'}">${d.status}</span></td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-sm" onclick="editDriver('${d.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteDriver('${d.id}')">✕</button>
+      </td>
+    </tr>`
+  }).join('')
+}
+
+function openAddDriverModal() {
+  editingDriverId = null
+  document.getElementById('driver-modal-title').textContent = 'Add Driver'
+  document.getElementById('driver-name').value     = ''
+  document.getElementById('driver-phone').value    = ''
+  document.getElementById('driver-email').value    = ''
+  document.getElementById('driver-vehicle').value  = ''
+  document.getElementById('driver-capacity').value = '10'
+  document.getElementById('driver-after-hours').checked = false
+  ;['mon','tue','wed','thu','fri'].forEach(d => { const el = document.getElementById('driver-'+d); if(el) el.checked = true })
+  ;['sat','sun'].forEach(d => { const el = document.getElementById('driver-'+d); if(el) el.checked = false })
+  openModal('add-driver')
+}
+
+async function editDriver(id) {
+  const { data: d } = await sb.from('drivers').select('*').eq('id', id).single()
+  if (!d) return
+  editingDriverId = id
+  document.getElementById('driver-modal-title').textContent = 'Edit Driver'
+  document.getElementById('driver-name').value     = d.full_name || ''
+  document.getElementById('driver-phone').value    = d.phone || ''
+  document.getElementById('driver-email').value    = d.email || ''
+  document.getElementById('driver-vehicle').value  = d.vehicle || ''
+  document.getElementById('driver-capacity').value = d.capacity || 10
+  document.getElementById('driver-after-hours').checked = d.after_hours || false
+  const wh = d.working_hours || {}
+  ;['mon','tue','wed','thu','fri','sat','sun'].forEach(day => {
+    const el = document.getElementById('driver-' + day)
+    if (el) el.checked = wh[day] || false
+  })
+  openModal('add-driver')
+}
+
+async function saveDriver() {
+  const name = document.getElementById('driver-name').value.trim()
+  if (!name) { showToast('⚠ Enter a name'); return }
+
+  const working_hours = {}
+  ;['mon','tue','wed','thu','fri','sat','sun'].forEach(d => {
+    const el = document.getElementById('driver-' + d)
+    working_hours[d] = el ? el.checked : false
+  })
+
+  const payload = {
+    full_name:    name,
+    phone:        document.getElementById('driver-phone').value.trim(),
+    email:        document.getElementById('driver-email').value.trim(),
+    vehicle:      document.getElementById('driver-vehicle').value.trim(),
+    capacity:     parseInt(document.getElementById('driver-capacity').value) || 10,
+    after_hours:  document.getElementById('driver-after-hours').checked,
+    working_hours,
+    business_id:  businessId,
+    status:       'active'
+  }
+
+  if (editingDriverId) {
+    const { error } = await sb.from('drivers').update(payload).eq('id', editingDriverId)
+    if (error) { showToast('✗ ' + error.message); return }
+    showToast('✓ Driver updated')
+  } else {
+    const { error } = await sb.from('drivers').insert(payload)
+    if (error) { showToast('✗ ' + error.message); return }
+    showToast('✓ Driver added')
+  }
+
+  document.getElementById('modal-add-driver').classList.remove('open')
+  loadDrivers()
+}
+
+async function deleteDriver(id) {
+  if (!confirm('Remove this driver?')) return
+  await sb.from('drivers').update({ status: 'inactive' }).eq('id', id)
+  showToast('✓ Driver deactivated')
+  loadDrivers()
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  ROUTE OPTIMIZER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function optimizeRoutes() {
+  const dateEl = document.getElementById('route-date')
+  if (!dateEl.value) dateEl.value = new Date().toISOString().slice(0,10)
+  const date = dateEl.value
+
+  const content = document.getElementById('routes-content')
+  content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--ink-3)"><div class="thinking" style="justify-content:center;margin-bottom:12px"><span></span><span></span><span></span></div>Optimizing routes…</div>'
+
+  // Get all jobs for this date with addresses
+  const { data: jobs } = await sb.from('jobs')
+    .select('*, drivers(full_name)')
+    .eq('business_id', businessId)
+    .eq('scheduled_date', date)
+    .neq('status', 'cancelled')
+    .order('scheduled_time', { ascending: true })
+
+  if (!jobs?.length) {
+    content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--ink-3)">No jobs scheduled for this date</div>'
+    return
+  }
+
+  // Get active drivers
+  const { data: drivers } = await sb.from('drivers').select('*').eq('business_id', businessId).eq('status','active')
+  if (!drivers?.length) {
+    content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--ink-3)">No active drivers — add drivers first</div>'
+    return
+  }
+
+  // Jobs with addresses that need geocoding
+  const jobsWithAddress = jobs.filter(j => j.address)
+
+  // Geocode addresses using ORS
+  const geocoded = await Promise.all(jobsWithAddress.map(async j => {
+    if (j.lat && j.lng) return { ...j, coords: [j.lng, j.lat] }
+    try {
+      const res = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${ORS_KEY}&text=${encodeURIComponent(j.address)}&size=1`)
+      const data = await res.json()
+      const coords = data.features?.[0]?.geometry?.coordinates
+      if (coords) {
+        await sb.from('jobs').update({ lng: coords[0], lat: coords[1] }).eq('id', j.id)
+        return { ...j, coords }
+      }
+    } catch(e) {}
+    return { ...j, coords: null }
+  }))
+
+  const validJobs = geocoded.filter(j => j.coords)
+
+  // Distribute jobs across drivers
+  const jobsPerDriver = Math.ceil(validJobs.length / drivers.length)
+  const routeGroups   = drivers.map((d, i) => ({
+    driver: d,
+    jobs:   validJobs.slice(i * jobsPerDriver, (i + 1) * jobsPerDriver)
+  })).filter(g => g.jobs.length > 0)
+
+  // Optimize each route with ORS
+  const optimizedRoutes = await Promise.all(routeGroups.map(async group => {
+    if (group.jobs.length <= 1) return { ...group, totalMins: 30, totalKm: 0 }
+    try {
+      const coords = group.jobs.map(j => j.coords)
+      const res = await fetch('https://api.openrouteservice.org/v2/directions/driving-car/json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': ORS_KEY },
+        body: JSON.stringify({ coordinates: coords, optimize_waypoints: true })
+      })
+      const data = await res.json()
+      const summary = data.routes?.[0]?.summary
+      return {
+        ...group,
+        totalMins: Math.round((summary?.duration || 0) / 60),
+        totalKm:   Math.round((summary?.distance || 0) / 1000 * 10) / 10
+      }
+    } catch(e) {
+      return { ...group, totalMins: null, totalKm: null }
+    }
+  }))
+
+  // Save routes to DB
+  for (const r of optimizedRoutes) {
+    const { data: route } = await sb.from('routes').insert({
+      business_id: businessId,
+      driver_id:   r.driver.id,
+      route_date:  date,
+      status:      'optimized',
+      total_miles: r.totalKm ? Math.round(r.totalKm * 0.621) : null,
+      total_mins:  r.totalMins,
+      optimized_at: new Date().toISOString()
+    }).select('id').single()
+
+    if (route) {
+      await sb.from('route_stops').insert(r.jobs.map((j, idx) => ({
+        route_id:   route.id,
+        job_id:     j.id,
+        stop_order: idx + 1,
+        status:     'pending'
+      })))
+      // Assign driver to jobs
+      await Promise.all(r.jobs.map(j => sb.from('jobs').update({ driver_id: r.driver.id, status: 'assigned' }).eq('id', j.id)))
+    }
+  }
+
+  // Render route cards
+  content.innerHTML = optimizedRoutes.map(r => `
+    <div style="margin-bottom:20px;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <div style="padding:14px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-weight:600;font-size:15px">${r.driver.full_name}</div>
+          <div style="font-size:12px;color:var(--ink-3)">${r.driver.vehicle || 'No vehicle set'}</div>
+        </div>
+        <div style="display:flex;gap:16px;font-size:13px">
+          <div style="text-align:center"><div style="font-weight:700;font-size:18px;color:var(--brand)">${r.jobs.length}</div><div style="color:var(--ink-3)">stops</div></div>
+          ${r.totalKm ? `<div style="text-align:center"><div style="font-weight:700;font-size:18px">${Math.round(r.totalKm * 0.621)}mi</div><div style="color:var(--ink-3)">distance</div></div>` : ''}
+          ${r.totalMins ? `<div style="text-align:center"><div style="font-weight:700;font-size:18px">${r.totalMins}m</div><div style="color:var(--ink-3)">drive time</div></div>` : ''}
+        </div>
+      </div>
+      <div style="padding:0">
+        ${r.jobs.map((j, idx) => `
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border)">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--brand-dim);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${idx+1}</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500">${j.title}</div>
+              <div style="font-size:11px;color:var(--ink-3)">${j.address || 'No address'}</div>
+            </div>
+            <div style="font-size:12px;color:var(--ink-3);font-family:var(--mono)">${j.scheduled_time?.slice(0,5) || '—'}</div>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(j.address||'')}" target="_blank" class="btn btn-ghost btn-sm">Navigate</a>
+          </div>`).join('')}
+        <div style="padding:12px 18px;display:flex;justify-content:flex-end">
+          <a href="/driver.html?route_date=${date}&driver_id=${r.driver.id}" target="_blank" class="btn btn-primary btn-sm">Open Driver App →</a>
+        </div>
+      </div>
+    </div>`).join('')
+
+  showToast('✓ Routes optimized for ' + optimizedRoutes.length + ' driver' + (optimizedRoutes.length > 1 ? 's' : ''))
+}
 const pageLoaders = {
   overview:   loadOverview,
   estimators: loadEstimators,
@@ -2454,6 +3075,16 @@ const pageLoaders = {
   analytics:  loadAnalytics,
   crm:        async () => { await loadIntegrations(); await loadRetryQueue(); },
   settings:   loadSettings,
+  schedule:   async () => {
+    const el = document.getElementById('schedule-date')
+    if (el && !el.value) el.value = new Date().toISOString().slice(0,10)
+    await loadSchedule()
+  },
+  drivers:    loadDrivers,
+  routes:     async () => {
+    const el = document.getElementById('route-date')
+    if (el && !el.value) el.value = new Date().toISOString().slice(0,10)
+  },
 }
 
 function navigate(id) {
