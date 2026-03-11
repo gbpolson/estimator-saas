@@ -1982,7 +1982,15 @@ const SUPABASE_URL = 'https://shjyorirrhdqwjfxrdsa.supabase.co'
 const ORS_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImM4ZDhiNjNlZTQ3ZjQxMjM5YTI3Y2E0ODk1MzY5MDg2IiwiaCI6Im11cm11cjY0In0='
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoanlvcmlycmhkcXdqZnhyZHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzNzAzNjcsImV4cCI6MjA1Njk0NjM2N30.6-PXu5bRqRZHxsyoArKHRpPFkGHgHJi5cFEMHGVODFI'
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,
+    storageKey: 'estimatorsaas-auth',
+    storage: window.localStorage,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+})
 
 // ── Helpers ───────────────────────────────────────
 function fmt(n) { return n == null ? '—' : Number(n).toLocaleString() }
@@ -2033,10 +2041,10 @@ function showLogin() {
 }
 
 async function initAuth() {
-  // Handle all auth state changes — magic links, token refresh, sign in/out
+  // onAuthStateChange handles magic links, token refresh, tab switches
   sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-      if (session) showApp(session.user)
+      if (session?.user) showApp(session.user)
     } else if (event === 'SIGNED_OUT') {
       currentUser = null
       businessId  = null
@@ -2044,18 +2052,12 @@ async function initAuth() {
     }
   })
 
-  // Check for existing persisted session on load
-  const { data: { session }, error } = await sb.auth.getSession()
+  // On page load, check localStorage for existing session
+  const { data: { session } } = await sb.auth.getSession()
   if (session?.user) {
     showApp(session.user)
   } else {
-    // Try refreshing — handles expired access token with valid refresh token
-    const { data: refreshed } = await sb.auth.refreshSession()
-    if (refreshed?.session?.user) {
-      showApp(refreshed.session.user)
-    } else {
-      showLogin()
-    }
+    showLogin()
   }
 }
 
