@@ -2033,21 +2033,29 @@ function showLogin() {
 }
 
 async function initAuth() {
-  // Listen for auth state changes — catches magic links, password resets, etc.
+  // Handle all auth state changes — magic links, token refresh, sign in/out
   sb.auth.onAuthStateChange((event, session) => {
-    if (session) {
-      showApp(session.user)
-    } else {
+    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+      if (session) showApp(session.user)
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null
+      businessId  = null
       showLogin()
     }
   })
 
-  // Also check existing session on load
-  const { data: { session } } = await sb.auth.getSession()
-  if (session) {
+  // Check for existing persisted session on load
+  const { data: { session }, error } = await sb.auth.getSession()
+  if (session?.user) {
     showApp(session.user)
   } else {
-    showLogin()
+    // Try refreshing — handles expired access token with valid refresh token
+    const { data: refreshed } = await sb.auth.refreshSession()
+    if (refreshed?.session?.user) {
+      showApp(refreshed.session.user)
+    } else {
+      showLogin()
+    }
   }
 }
 
@@ -2056,14 +2064,16 @@ async function doLogin() {
   const pass  = document.getElementById('login-pass').value
   const errEl = document.getElementById('login-error')
   errEl.textContent = ''
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass })
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass })
   if (error) { errEl.textContent = error.message; return }
-  initAuth()
+  if (data.user) showApp(data.user)
 }
 
 async function doLogout() {
   await sb.auth.signOut()
-  initAuth()
+  currentUser = null
+  businessId  = null
+  showLogin()
 }
 
 function loadUserMeta() {
