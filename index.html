@@ -1327,6 +1327,7 @@
               <option value="en_route">En Route</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
+              <option value="pending_approval">Pending Approval</option>
             </select>
           </div>
         </div>
@@ -1665,6 +1666,98 @@
               </tbody>
             </table>
             <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="showToast('📧 Invite email sent')">+ Invite Member</button>
+          </div>
+        </div>
+      </div>
+      <!-- Booking Settings -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📅 Online Booking Settings</div>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--surface);border-radius:10px;border:1.5px solid var(--border)">
+            <div>
+              <div style="font-weight:600;font-size:14px">Enable Online Booking</div>
+              <div style="font-size:12px;color:var(--ink-3);margin-top:3px">Allow customers to book a time slot directly from their estimate</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
+              <input type="checkbox" id="booking-enabled" style="opacity:0;width:0;height:0" onchange="saveBookingSettings()">
+              <span id="booking-toggle" style="position:absolute;inset:0;background:var(--border);border-radius:12px;transition:.3s"></span>
+              <span id="booking-knob" style="position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>
+            </label>
+          </div>
+
+          <div id="booking-options" style="display:none;flex-direction:column;gap:14px">
+            <div class="form-field">
+              <label class="form-label">Booking Approval Mode</label>
+              <select class="form-input" id="booking-approval" onchange="saveBookingSettings()">
+                <option value="manual">Manual — you review and approve each booking request</option>
+                <option value="auto">Auto-approve — booking is confirmed immediately</option>
+              </select>
+              <div id="booking-approval-hint" style="font-size:12px;color:var(--ink-3);margin-top:6px;padding:8px 10px;background:var(--surface);border-radius:8px">
+                📋 Customers submit a request — you'll see it in your schedule as "Pending Approval" and can accept or decline.
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-field">
+                <label class="form-label">Booking Window (days ahead)</label>
+                <select class="form-input" id="booking-window" onchange="saveBookingSettings()">
+                  <option value="7">Up to 7 days ahead</option>
+                  <option value="14" selected>Up to 14 days ahead</option>
+                  <option value="30">Up to 30 days ahead</option>
+                  <option value="60">Up to 60 days ahead</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label">Slot Duration (mins)</label>
+                <select class="form-input" id="booking-slot-duration" onchange="saveBookingSettings()">
+                  <option value="30">30 min slots</option>
+                  <option value="60" selected>1 hour slots</option>
+                  <option value="120">2 hour slots</option>
+                  <option value="0">No time slots (date only)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label">Business Hours Start</label>
+                <input class="form-input" type="time" id="booking-hours-start" value="08:00" onchange="saveBookingSettings()">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Business Hours End</label>
+                <input class="form-input" type="time" id="booking-hours-end" value="17:00" onchange="saveBookingSettings()">
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Available Days</label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+                <label class="day-chip"><input type="checkbox" name="booking-day" value="1" checked onchange="saveBookingSettings()"> Mon</label>
+                <label class="day-chip"><input type="checkbox" name="booking-day" value="2" checked onchange="saveBookingSettings()"> Tue</label>
+                <label class="day-chip"><input type="checkbox" name="booking-day" value="3" checked onchange="saveBookingSettings()"> Wed</label>
+                <label class="day-chip"><input type="checkbox" name="booking-day" value="4" checked onchange="saveBookingSettings()"> Thu</label>
+                <label class="day-chip"><input type="checkbox" name="booking-day" value="5" checked onchange="saveBookingSettings()"> Fri</label>
+                <label class="day-chip"><input type="checkbox" name="booking-day" value="6" onchange="saveBookingSettings()"> Sat</label>
+                <label class="day-chip"><input type="checkbox" name="booking-day" value="0" onchange="saveBookingSettings()"> Sun</label>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">After-Hours / Weekend Booking</label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-top:4px">
+                <input type="checkbox" id="booking-after-hours" onchange="saveBookingSettings()">
+                Allow customers to request after-hours or weekend appointments (shown with premium pricing notice)
+              </label>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Confirmation Message</label>
+              <textarea class="form-input" id="booking-confirm-msg" rows="2" placeholder="e.g. Thanks for booking! We'll confirm your appointment within 24 hours." onchange="saveBookingSettings()"></textarea>
+            </div>
+
+            <div style="padding:12px 14px;background:var(--brand-dim);border-radius:8px;font-size:12px;color:var(--brand)">
+              🔗 Your booking page: <strong id="booking-page-url">yourapp.vercel.app/booking.html?b=your-slug</strong>
+              <button class="btn btn-ghost btn-sm" style="margin-left:8px;font-size:11px" onclick="copyBookingLink()">Copy link</button>
+            </div>
           </div>
         </div>
       </div>
@@ -2844,6 +2937,90 @@ document.addEventListener('change', function(e) {
   }
 })
 
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  BOOKING SETTINGS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadBookingSettings() {
+  const { data: biz } = await sb.from('businesses').select('settings, slug').eq('id', businessId).single()
+  if (!biz) return
+  const s = biz.settings?.booking || {}
+
+  const enabledEl = document.getElementById('booking-enabled')
+  if (enabledEl) {
+    enabledEl.checked = s.enabled || false
+    updateBookingToggleUI(s.enabled)
+  }
+
+  if (s.approval)          document.getElementById('booking-approval').value         = s.approval
+  if (s.window)            document.getElementById('booking-window').value            = s.window
+  if (s.slot_duration !== undefined) document.getElementById('booking-slot-duration').value = s.slot_duration
+  if (s.hours_start)       document.getElementById('booking-hours-start').value       = s.hours_start
+  if (s.hours_end)         document.getElementById('booking-hours-end').value         = s.hours_end
+  if (s.confirm_msg)       document.getElementById('booking-confirm-msg').value       = s.confirm_msg
+  if (s.after_hours !== undefined) document.getElementById('booking-after-hours').checked = s.after_hours
+
+  if (s.days) {
+    document.querySelectorAll('input[name="booking-day"]').forEach(el => {
+      el.checked = s.days.includes(parseInt(el.value))
+    })
+  }
+
+  // Set booking URL
+  const urlEl = document.getElementById('booking-page-url')
+  if (urlEl) urlEl.textContent = `${location.origin}/booking.html?b=${biz.slug}`
+
+  updateBookingApprovalHint()
+}
+
+function updateBookingToggleUI(enabled) {
+  const toggle = document.getElementById('booking-toggle')
+  const knob   = document.getElementById('booking-knob')
+  const opts   = document.getElementById('booking-options')
+  if (toggle) toggle.style.background = enabled ? 'var(--brand)' : 'var(--border)'
+  if (knob)   knob.style.left         = enabled ? '23px' : '3px'
+  if (opts)   opts.style.display      = enabled ? 'flex' : 'none'
+}
+
+function updateBookingApprovalHint() {
+  const mode    = document.getElementById('booking-approval')?.value
+  const hintEl  = document.getElementById('booking-approval-hint')
+  if (!hintEl) return
+  hintEl.textContent = mode === 'auto'
+    ? '✅ Customers get instant confirmation — job is created automatically in your schedule.'
+    : '📋 Customers submit a request — you'll see it in your schedule as "Pending Approval" and can accept or decline.'
+}
+
+document.addEventListener('change', e => {
+  if (e.target?.id === 'booking-enabled') updateBookingToggleUI(e.target.checked)
+  if (e.target?.id === 'booking-approval') updateBookingApprovalHint()
+})
+
+async function saveBookingSettings() {
+  const days = Array.from(document.querySelectorAll('input[name="booking-day"]:checked')).map(el => parseInt(el.value))
+  const settings = {
+    enabled:       document.getElementById('booking-enabled')?.checked || false,
+    approval:      document.getElementById('booking-approval')?.value || 'manual',
+    window:        parseInt(document.getElementById('booking-window')?.value) || 14,
+    slot_duration: parseInt(document.getElementById('booking-slot-duration')?.value) || 60,
+    hours_start:   document.getElementById('booking-hours-start')?.value || '08:00',
+    hours_end:     document.getElementById('booking-hours-end')?.value   || '17:00',
+    after_hours:   document.getElementById('booking-after-hours')?.checked || false,
+    confirm_msg:   document.getElementById('booking-confirm-msg')?.value || '',
+    days
+  }
+
+  // Merge into existing business settings
+  const { data: biz } = await sb.from('businesses').select('settings').eq('id', businessId).single()
+  const merged = { ...(biz?.settings || {}), booking: settings }
+  await sb.from('businesses').update({ settings: merged }).eq('id', businessId)
+  showToast('✓ Booking settings saved')
+}
+
+function copyBookingLink() {
+  const url = document.getElementById('booking-page-url')?.textContent
+  if (url) { navigator.clipboard.writeText('https://' + url.replace('https://','').replace('http://','')); showToast('📋 Link copied!') }
+}
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  CSV / SPREADSHEET JOB IMPORT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2999,7 +3176,7 @@ async function loadSchedule() {
   }
 
   const priorityColors = { normal: '', urgent: 'color:var(--amber);font-weight:600', after_hours: 'color:var(--red);font-weight:600', weekend: 'color:var(--purple);font-weight:600' }
-  const statusColors   = { pending: 'badge-amber', assigned: 'badge-brand', en_route: 'badge-purple', completed: 'badge-green', cancelled: 'badge-red' }
+  const statusColors   = { pending: 'badge-amber', pending_approval: 'badge-orange', assigned: 'badge-brand', en_route: 'badge-purple', completed: 'badge-green', cancelled: 'badge-red' }
 
   tbody.innerHTML = jobs.map(j => `<tr>
     <td style="padding-left:20px">
@@ -3237,6 +3414,19 @@ async function saveRecurringJobs(basePayload) {
   loadSchedule()
 }
 
+
+async function approveBooking(jobId) {
+  await sb.from('jobs').update({ status: 'pending' }).eq('id', jobId)
+  showToast('✓ Booking approved')
+  loadSchedule()
+}
+
+async function declineBooking(jobId) {
+  if (!confirm('Decline this booking request?')) return
+  await sb.from('jobs').update({ status: 'cancelled' }).eq('id', jobId)
+  showToast('Booking declined')
+  loadSchedule()
+}
 async function deleteJob(id) {
   if (!confirm('Delete this job?')) return
   await sb.from('jobs').delete().eq('id', id)
@@ -3550,7 +3740,7 @@ const pageLoaders = {
   leads:      loadLeads,
   analytics:  loadAnalytics,
   crm:        async () => { await loadIntegrations(); await loadRetryQueue(); },
-  settings:   loadSettings,
+  settings:   async () => { await loadSettings(); await loadBookingSettings(); },
   schedule:   async () => {
     const el = document.getElementById('schedule-date')
     if (el && !el.value) el.value = new Date().toISOString().slice(0,10)
