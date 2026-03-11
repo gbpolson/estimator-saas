@@ -648,7 +648,6 @@
   <div style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:36px;width:380px;box-shadow:var(--shadow-lg)">
     <div style="font-family:var(--serif);font-size:24px;font-weight:600;color:var(--ink);margin-bottom:4px">EstimatorSaaS</div>
 
-    <!-- Sign In View -->
     <div id="auth-signin-view">
       <div style="font-size:13px;color:var(--ink-3);margin-bottom:24px">Sign in to your dashboard</div>
       <div class="form-field"><label class="form-label">Email</label><input id="login-email" class="form-input" type="email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
@@ -660,23 +659,21 @@
         <input id="login-pass" class="form-input" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
       <div id="login-error" style="color:var(--red);font-size:12px;margin-bottom:12px;min-height:16px"></div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Sign In</button>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">Sign In</button>
     </div>
 
-    <!-- Forgot Password View -->
     <div id="auth-reset-view" style="display:none">
-      <div style="font-size:13px;color:var(--ink-3);margin-bottom:24px">Enter your email and we will send a reset link.</div>
+      <div style="font-size:13px;color:var(--ink-3);margin-bottom:24px">Enter your email to receive a reset link.</div>
       <div class="form-field"><label class="form-label">Email</label><input id="reset-email" class="form-input" type="email" placeholder="you@example.com"></div>
       <div id="reset-msg" style="font-size:12px;margin-bottom:12px;min-height:16px"></div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:10px" onclick="doPasswordReset()">Send Reset Link</button>
       <button onclick="showSignIn()" style="background:none;border:none;color:var(--ink-3);font-size:13px;cursor:pointer;font-family:inherit;width:100%;text-align:center">← Back to sign in</button>
     </div>
 
-    <!-- New Password View (after clicking reset link) -->
     <div id="auth-newpass-view" style="display:none">
-      <div style="font-size:13px;color:var(--ink-3);margin-bottom:24px">Choose a new password for your account.</div>
+      <div style="font-size:13px;color:var(--ink-3);margin-bottom:24px">Choose a new password.</div>
       <div class="form-field"><label class="form-label">New Password</label><input id="newpass-input" class="form-input" type="password" placeholder="Min 8 characters"></div>
-      <div class="form-field"><label class="form-label">Confirm Password</label><input id="newpass-confirm" class="form-input" type="password" placeholder="Repeat password"></div>
+      <div class="form-field"><label class="form-label">Confirm Password</label><input id="newpass-confirm" class="form-input" type="password"></div>
       <div id="newpass-msg" style="font-size:12px;margin-bottom:12px;min-height:16px"></div>
       <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doSetNewPassword()">Set New Password</button>
     </div>
@@ -2010,9 +2007,7 @@ const SUPABASE_URL = 'https://shjyorirrhdqwjfxrdsa.supabase.co'
 const ORS_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImM4ZDhiNjNlZTQ3ZjQxMjM5YTI3Y2E0ODk1MzY5MDg2IiwiaCI6Im11cm11cjY0In0='
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoanlvcmlycmhkcXdqZnhyZHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzNzAzNjcsImV4cCI6MjA1Njk0NjM2N30.6-PXu5bRqRZHxsyoArKHRpPFkGHgHJi5cFEMHGVODFI'
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, storageKey: 'esaas-auth', storage: window.localStorage, autoRefreshToken: true, detectSessionInUrl: true }
-})
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, storageKey: 'esaas-auth', storage: window.localStorage, autoRefreshToken: true, detectSessionInUrl: true } })
 
 // ── Helpers ───────────────────────────────────────
 function fmt(n) { return n == null ? '—' : Number(n).toLocaleString() }
@@ -2063,70 +2058,50 @@ function showLogin() {
 }
 
 
-// ── Password Reset ─────────────────────────────────
 function showForgotPassword() {
   document.getElementById('auth-signin-view').style.display = 'none'
   document.getElementById('auth-reset-view').style.display  = 'block'
   document.getElementById('auth-newpass-view').style.display = 'none'
-  const email = document.getElementById('login-email').value
-  if (email) document.getElementById('reset-email').value = email
+  const e = document.getElementById('login-email').value
+  if (e) document.getElementById('reset-email').value = e
 }
-
 function showSignIn() {
   document.getElementById('auth-signin-view').style.display  = 'block'
   document.getElementById('auth-reset-view').style.display   = 'none'
   document.getElementById('auth-newpass-view').style.display = 'none'
 }
-
 async function doPasswordReset() {
-  const email  = document.getElementById('reset-email').value.trim()
-  const msgEl  = document.getElementById('reset-msg')
-  msgEl.style.color = 'var(--ink-3)'
-  msgEl.textContent = ''
+  const email = document.getElementById('reset-email').value.trim()
+  const msgEl = document.getElementById('reset-msg')
   if (!email) { msgEl.style.color='var(--red)'; msgEl.textContent='Enter your email'; return }
-
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + window.location.pathname + '?reset=1'
+    redirectTo: window.location.origin + '/?reset=1'
   })
-  if (error) {
-    msgEl.style.color = 'var(--red)'
-    msgEl.textContent = error.message
-  } else {
-    msgEl.style.color = 'var(--green)'
-    msgEl.textContent = '✓ Reset link sent — check your email'
-  }
+  msgEl.style.color = error ? 'var(--red)' : 'var(--green)'
+  msgEl.textContent = error ? error.message : '✓ Reset link sent — check your email'
 }
-
 async function doSetNewPassword() {
-  const pass    = document.getElementById('newpass-input').value
-  const confirm = document.getElementById('newpass-confirm').value
-  const msgEl   = document.getElementById('newpass-msg')
-  msgEl.textContent = ''
-  if (pass.length < 8)  { msgEl.style.color='var(--red)'; msgEl.textContent='Password must be at least 8 characters'; return }
-  if (pass !== confirm)  { msgEl.style.color='var(--red)'; msgEl.textContent='Passwords do not match'; return }
-
+  const pass = document.getElementById('newpass-input').value
+  const conf = document.getElementById('newpass-confirm').value
+  const msgEl = document.getElementById('newpass-msg')
+  if (pass.length < 8) { msgEl.style.color='var(--red)'; msgEl.textContent='Min 8 characters'; return }
+  if (pass !== conf)   { msgEl.style.color='var(--red)'; msgEl.textContent='Passwords do not match'; return }
   const { error } = await sb.auth.updateUser({ password: pass })
-  if (error) {
-    msgEl.style.color = 'var(--red)'
-    msgEl.textContent = error.message
-  } else {
-    msgEl.style.color  = 'var(--green)'
-    msgEl.textContent  = '✓ Password updated — signing you in…'
-    setTimeout(() => initAuth(), 1200)
-  }
+  if (error) { msgEl.style.color='var(--red)'; msgEl.textContent=error.message; return }
+  msgEl.style.color='var(--green)'; msgEl.textContent='✓ Password updated — signing you in…'
+  setTimeout(() => initAuth(), 1200)
 }
+
 async function initAuth() {
   sb.auth.onAuthStateChange((event, session) => {
-    if (event === 'PASSWORD_RECOVERY') {
-      // User clicked reset link — show new password form
+    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+      if (session?.user) showApp(session.user)
+    } else if (event === 'PASSWORD_RECOVERY') {
       showLogin()
       setTimeout(() => {
-        document.getElementById('auth-signin-view').style.display  = 'none'
-        document.getElementById('auth-reset-view').style.display   = 'none'
-        document.getElementById('auth-newpass-view').style.display = 'block'
+        document.getElementById('auth-signin-view') && (document.getElementById('auth-signin-view').style.display = 'none')
+        document.getElementById('auth-newpass-view') && (document.getElementById('auth-newpass-view').style.display = 'block')
       }, 100)
-    } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-      if (session?.user) { showApp(session.user) }
     } else if (event === 'SIGNED_OUT') {
       currentUser = null; businessId = null; showLogin()
     }
