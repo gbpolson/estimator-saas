@@ -472,9 +472,18 @@ function switchTab(name, el) {
 const UNITS = ['flat', 'per hour', 'per day', 'per week', 'per month', 'per unit', 'per sq ft', 'per linear ft', 'per cu yd']
 
 function addService() {
-  services.push({ id: uid(), name: 'New Service', unit: 'flat', base_price: 0, description: '' })
+  const newSvc = { id: uid(), name: 'New Service', unit: 'flat', base_price: 0, description: '' }
+  services.push(newSvc)
+  // Auto-add to any existing service picker steps
+  steps.forEach(step => {
+    if (step.type === 'services') {
+      step.service_ids = step.service_ids || []
+      step.service_ids.push(newSvc.id)
+    }
+  })
   renderServices()
   selectService(services.length - 1)
+  updatePreview()
   markDirty()
 }
 
