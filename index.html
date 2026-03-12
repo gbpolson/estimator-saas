@@ -2044,12 +2044,15 @@ function showError(el, msg) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let currentUser = null
 
-function showApp(user) {
+async function showApp(user) {
   currentUser = user
   document.getElementById('auth-gate').style.display = 'none'
   document.getElementById('app-shell').style.display  = 'flex'
-  loadOverview()
   loadUserMeta()
+  // Fetch businessId from memberships
+  const { data: mem } = await sb.from('memberships').select('business_id').eq('user_id', user.id).single()
+  if (mem) businessId = mem.business_id
+  loadOverview()
 }
 
 function showLogin() {
