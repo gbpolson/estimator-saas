@@ -2489,7 +2489,7 @@ async function loadOverview() {
 
     // Recent leads table
     const { data: recentLeads, error } = await sb.from('leads')
-      .select('lead_uid, full_name, email, estimator_id, estimate_result, crm_status, created_at')
+      .select('lead_uid, full_name, email, estimator_uid, estimate_result, crm_status, created_at')
       .order('created_at', { ascending: false })
       .limit(5)
 
@@ -2503,7 +2503,7 @@ async function loadOverview() {
       return `<tr>
         <td><div class="lead-email">${l.full_name || 'Anonymous'}</div>
             <div style="font-size:11px;color:var(--ink-3)">${l.email || '—'}</div></td>
-        <td style="font-size:12px;color:var(--ink-3);font-family:var(--mono)">${l.estimator_id?.slice(0,8) || '—'}</td>
+        <td style="font-size:12px;color:var(--ink-3);font-family:var(--mono)">${l.estimator_uid?.slice(0,8) || '—'}</td>
         <td class="lead-value">${val ? fmtMoney(val) : '—'}</td>
         <td>${badge(l.crm_status)}</td>
         <td style="color:var(--ink-3);font-size:12px">${timeAgo(l.created_at)}</td>
@@ -2863,7 +2863,7 @@ async function loadAnalytics() {
     if (estId) {
       const { data: est } = await sb.from('estimators').select('slug').eq('id', estId).single()
       if (est) evQuery = evQuery.eq('estimator_uid', est.slug)
-      ldQuery = ldQuery.eq('estimator_id', estId)
+      ldQuery = ldQuery.eq('estimator_uid', estId)
     }
 
     const { data: events, count: totalEvents } = await evQuery.limit(5000)
@@ -3243,7 +3243,7 @@ async function syncToHubSpot(apiKey, lead) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function loadRetryQueue() {
   const { data, error } = await sb.from('leads')
-    .select('id, lead_uid, full_name, estimator_id, crm_status, crm_error, crm_retry_count, next_retry_at')
+    .select('id, lead_uid, full_name, crm_status, crm_error, crm_retry_count, next_retry_at')
     .eq('crm_status', 'failed')
     .order('next_retry_at', { ascending: true })
     .limit(20)
